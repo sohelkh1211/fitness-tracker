@@ -33,7 +33,7 @@ const Register = () => {
     };
 
     const handleUser = (e) => {
-        const {name, value } = e.target;
+        const { name, value } = e.target;
         setUserCredential({
             ...userCredential,
             [name]: value
@@ -54,8 +54,15 @@ const Register = () => {
         }
         // Form submission logic (e.g., sending data to server)
         else {
-            getData(e);
-            signUp(e);
+            signUp(e)
+                .then((error) => {
+                    getData(e);
+                })
+                .catch((error) => {
+                    // console.error("Error in sign up:", error);
+                    alert(error);
+                });
+
             // console.log('Form submitted:', formData);
         }
     };
@@ -64,11 +71,33 @@ const Register = () => {
         e.preventDefault();
         const email1 = formData["email"];
         const password1 = userCredential["password"];
-        createUserWithEmailAndPassword(auth,email1,password1).then((userCredential) => {
-            console.log(userCredential);
-        })
-        .catch((error) => {
-            console.log(error);
+        return new Promise((resolve, reject) => {
+            createUserWithEmailAndPassword(auth, email1, password1)
+                .then((userCredential) => {
+                    resolve(""); // Resolve with an empty string if sign up is successful
+                })
+                .catch((error) => {
+                    let errorMessage = "";
+                    switch (error.code) {
+                        case 'auth/email-already-in-use':
+                            errorMessage = `Email address ${email1} already in use.`;
+                            break;
+                        case 'auth/invalid-email':
+                            errorMessage = `Email address ${email1} is invalid.`;
+                            break;
+                        case 'auth/operation-not-allowed':
+                            errorMessage = `Error during sign up.`;
+                            break;
+                        case 'auth/weak-password':
+                            errorMessage = 'Password is not strong enough. Add additional characters including special characters and numbers.';
+                            break;
+                        default:
+                            errorMessage = error.message;
+                            break;
+                    }
+                    console.log(errorMessage); // Log the error message
+                    reject(errorMessage); // Reject with the error message
+                });
         });
     }
 
@@ -101,25 +130,25 @@ const Register = () => {
 
     return (
         <>
-            <img src={fitness_bg} className='fixed top-0 left-0 h-full w-full object-cover blur-sm ' />
-            <div className='relative flex mx-auto w-[600px] min-h-[600px] rounded-lg container'>
+            <img src={fitness_bg} className='fixed top-0 left-0 sm:h-full sm:w-full xs:w-full xs:h-full object-cover blur-sm ' />
+            <div className='relative flex mx-auto sm:w-[600px] sm:h-[570px] xs:w-full xs:h-[520px] rounded-lg container'>
                 <form onSubmit={handleSubmit} method='POST'>
-                    <div className='flex ml-[200px] border-none border-black mt-20 w-fit'>
-                        <h1 className='text-[25px] font-bold'>Create Account</h1>
+                    <div className='flex sm:ml-[180px] xs:ml-[40px] border-none border-black sm:mt-14 xs:mt-6 w-fit'>
+                        <h1 className='sm:text-[35px] xs:text-[25px] font-bold'>Create Account</h1>
                     </div>
-                    <div className='absolute mt-8 ml-[110px] pl-[10px] pb-4 flex flex-col w-[350px]  pt-6 justify-between gap-y-4 border-[1.35px] border-black'>
-                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleInputChange} className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' />
-                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' />
-                        <select name="gender" className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' value={formData.gender} onChange={handleInputChange}>
+                    <div className='absolute sm:mt-4 xs:mt-2 sm:ml-[110px] xs:ml-[25px] sm:pl-[10px] xs:pl-0 pb-4 flex flex-col sm:w-[400px] xs:w-[200px] pt-6 justify-between gap-y-4 border-none border-[1.35px] border-black'>
+                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleInputChange} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
+                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        <select name="gender" className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' value={formData.gender} onChange={handleInputChange}>
                             <option value="gender">Gender</option>
                             <option value="male">Male</option>
                             <option value="female">Female</option>
                         </select>
-                        <input type="date" name="dob" className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' value={formData.dob} onChange={handleInputChange} />
-                        <input type='number' name="height" placeholder='Your height in Ft' value={formData.height} onChange={handleInputChange} className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' />
-                        <input type="password" name="password" placeholder="Set Passsword" value={userCredential.password} onChange={handleUser} className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' />
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={userCredential.confirmPassword} onChange={handleUser} className='w-[300px] rounded-sm bg-transparent border-[1.4px] border-black pl-1' />
-                        <button type='submit' className='border w-fit mx-auto px-10 py-2 bg-emerald-300 border-green-400 rounded-md'>Sign Up</button>
+                        <input type="date" name="dob" className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' value={formData.dob} onChange={handleInputChange} />
+                        <input type='number' name="height" placeholder='Your height in Ft' value={formData.height} onChange={handleInputChange} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        <input type="password" name="password" placeholder="Set Passsword" value={userCredential.password} onChange={handleUser} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={userCredential.confirmPassword} onChange={handleUser} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        <button type='submit' className='border  sm:w-fit xs:w-[100px] sm:ml-[115px] xs:ml-[50px] sm:px-10 xs:px-4 sm:py-2 xs:py-2 bg-emerald-300 border-green-400 rounded-md'>Sign Up</button>
                     </div>
                 </form>
             </div>

@@ -8,7 +8,6 @@ import { useNavigate } from 'react-router-dom';
 
 const Startup1 = () => {
     const [toggle, setToggle] = useState(false);
-    console.log(toggle);
     const navigate = useNavigate();
     return (
         <>
