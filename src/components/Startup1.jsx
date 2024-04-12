@@ -4,6 +4,8 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import pic from '../assets/pullup.jpg';
 import pic1 from '../assets/deadlift.jpg';
 import pic2 from '../assets/pushup.jpg';
+import calories from '../assets/calories.png';
+import sleep from '../assets/sleep_tracker1.avif';
 import { useNavigate } from 'react-router-dom';
 
 const Startup1 = () => {
@@ -26,7 +28,7 @@ const Startup1 = () => {
                         <path className="line line3" d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942" />
                     </svg>
                 </button>
-            </div> 
+            </div>
             {toggle && <div className='xs:absolute z-10 sm:hidden top-[80px] w-[300px] py-2 bg-white border rounded-md'>
                 <ul className='list-none flex flex-col justify-between items-start gap-y-2 px-4'>
                     <li><a href='/home'>Home</a></li>
@@ -43,6 +45,30 @@ const Startup1 = () => {
                     <img src={pic} className='h-[210px] object-cover border-[1.5px] border-black' />
                     <img src={pic1} className='h-[210px] object-cover border-[1.5px] border-black ' />
                     <img src={pic2} className='h-[210px] object-cover border-[1.5px] rounded-r-xl border-black ' />
+                </div>
+            </div>
+            <div className='relative grid sm:grid-cols-2 xs:grid-cols-1 sm:top-[140px] xs:top-[90px] rounded-xl slider cursor-pointer border border-black-100'>
+                <div className='border-none border-green-400 text-left sm:pl-4 sm:py-4 xs:pl-4 xs:pr-10 xs:py-2'>
+                    <h1 className='sm:text-[35px] xs:text-[20px] text-white font-bold pb-4'>Track your calories</h1>
+                    <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Track How many calories you have burnt and gained today.</p>
+                </div>
+                <div className='xs:hidden sm:flex border-none border-fuchsia-500'>
+                    <img src={calories} className='mt-4 mx-auto w-[50%] h-[80%] object-cover rounded-xl border-black border-[2px]' />
+                </div>
+            </div>
+            <div className='relative grid sm:grid-cols-2 xs:grid-cols-1 sm:top-[160px] xs:top-[120px] rounded-xl slider cursor-pointer border border-black-100'>
+                <div className='border-none border-green-400 text-left sm:pl-4 sm:py-4 xs:pl-4 xs:pr-10 xs:py-2'>
+                    <h1 className='sm:text-[35px] xs:text-[20px] text-white font-bold pb-4'>Track sleep hours</h1>
+                    <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Optimize your rest: Track your sleep hours for better health.</p>
+                </div>
+                <div className='xs:hidden sm:flex overflow-hidden border-none border-orange-500'>
+                    <img src={sleep} className='my-auto  mx-auto w-[38%] h-[80%] rounded-xl object-cover' />
+                </div>
+            </div>
+            <div className='relative grid sm:grid-cols-2 xs:grid-cols-1 sm:top-[180px] rounded-xl slider cursor-pointer border border-black-100'>
+                <div className='text-left sm:pl-4 sm:py-4 xs:pl-4 xs:pr-10 xs:py-2'>
+                    <h1 className='sm:text-[35px] xs:text-[20px] text-white font-bold pb-4'>Track your hydration</h1>
+                    <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Optimize your rest: Track your sleep hours for better health.</p>
                 </div>
             </div>
         </>

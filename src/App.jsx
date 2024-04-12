@@ -9,6 +9,7 @@ import Startup1 from './components/Startup1';
 import Home from './pages/Home';
 import ExerciseDetail from './pages/ExerciseDetail'
 
+
 function App() {
   const [active, setActive] = useState(true);
   useEffect(() => {
