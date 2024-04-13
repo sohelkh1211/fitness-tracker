@@ -6,6 +6,7 @@ import pic1 from '../assets/deadlift.jpg';
 import pic2 from '../assets/pushup.jpg';
 import calories from '../assets/calories.png';
 import sleep from '../assets/sleep_tracker1.avif';
+import Hydration from '../assets/Hydration.jpg';
 import { useNavigate } from 'react-router-dom';
 
 const Startup1 = () => {
@@ -62,15 +63,19 @@ const Startup1 = () => {
                     <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Optimize your rest: Track your sleep hours for better health.</p>
                 </div>
                 <div className='xs:hidden sm:flex overflow-hidden border-none border-orange-500'>
-                    <img src={sleep} className='my-auto  mx-auto w-[38%] h-[80%] rounded-xl object-cover' />
+                    <img src={sleep} className='my-auto mx-auto w-[50%] h-[80%] rounded-xl object-cover' />
                 </div>
             </div>
-            <div className='relative grid sm:grid-cols-2 xs:grid-cols-1 sm:top-[180px] rounded-xl slider cursor-pointer border border-black-100'>
+            <div className='relative grid sm:grid-cols-2 xs:grid-cols-1 sm:top-[180px] xs:top-[140px] rounded-xl slider cursor-pointer mb-8 border border-black-100'>
                 <div className='text-left sm:pl-4 sm:py-4 xs:pl-4 xs:pr-10 xs:py-2'>
                     <h1 className='sm:text-[35px] xs:text-[20px] text-white font-bold pb-4'>Track your hydration</h1>
-                    <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Optimize your rest: Track your sleep hours for better health.</p>
+                    <p className='sm:w-[500px] xs:w-[170px] sm:text-[20px] xs:text-[16px] text-white'>Stay refreshed and hydrated: Track your water intake.</p>
+                </div>
+                <div className='xs:hidden sm:flex pt-8 pb-4 border-none border-yellow-500'>
+                    <img src={Hydration} className='mx-auto w-[50%] h-[90%] rounded-xl object-cover' />
                 </div>
             </div>
+            <div className='relative top-[200px] border'></div>
         </>
     )
 }
