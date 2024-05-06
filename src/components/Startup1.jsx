@@ -11,10 +11,25 @@ import { useNavigate } from 'react-router-dom';
 
 const Startup1 = () => {
     const [toggle, setToggle] = useState(false);
+    const [isscroll, setIsscroll] = useState(false);
+    useEffect(() =>{
+        const handleScroll = () => {
+            if(window.scrollY > 200){
+                setIsscroll(true);
+            }
+            else{
+                setIsscroll(false);
+            }
+        }
+        window.addEventListener('scroll', handleScroll);
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        }
+    }, []);
     const navigate = useNavigate();
     return (
         <>
-            <div className='fixed flex top-0 z-20 w-full left-0 h-[60px] bg-white rounded-md border justify-start items-center'>
+            <div className={`fixed flex top-0 z-20 w-full left-0 h-[60px] bg-white rounded-md ${isscroll ? ' border-b-green-600 border-b-2' : ''} border justify-start items-center`}>
                 <p className='px-[30px] py-[14px] text-[18px] font-semibold'>Healthify</p>
                 <div className='sm:flex xs:hidden justify-between gap-8 ml-[32%] border-none border-black'>
                     <Link to="/home" className='text-[18px] font-bold hover:underline'>Home</Link>
