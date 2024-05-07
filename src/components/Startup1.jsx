@@ -36,7 +36,7 @@ const Startup1 = () => {
                     <Link to="/about" className='text-[18px] font-bold hover:underline'>About</Link>
                     <Link to="/contact" className='text-[18px] font-bold hover:underline'>Contact</Link>
                 </div>
-                <AccountCircleIcon sx={{ fontSize: { sm: 30, xs: 30 }, marginLeft: { sm: 58 }, display: { sm: 'flex', xs: 'none' } }} />
+                <AccountCircleIcon sx={{ fontSize: { sm: 30, xs: 30 }, marginLeft: { sm: 58 }, display: { sm: 'flex', xs: 'none' }, cursor: 'pointer' }} onClick={() => navigate("/profile")} />
                 <button className={`flex ml-[45%] bg-transparent p-0 cursor-pointer border-none ${toggle ? 'opened' : ''}`} onClick={() => setToggle(!toggle)} aria-expanded={toggle} aria-label="Main Menu">
                     <svg width="40" height="50" viewBox="0 0 100 100">
                         <path className="line line1" d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058" />

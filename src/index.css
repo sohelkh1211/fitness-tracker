@@ -50,7 +50,6 @@ html::-webkit-scrollbar-thumb {
   background-color: #be6ff2;
 }
 
-
 .container{
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
 }
@@ -66,6 +65,17 @@ body {
 
 ::-webkit-scrollbar {
   width: 0px;
+}
+
+/* ----------------------------------------------------- */
+/* Dashboard Styling */
+.dashboard {
+  font-family: "Lora", serif;
+}
+
+.date {
+  /* font-family: "Poetsen One", sans-serif; */
+  font-family: "Sedan SC", serif;
 }
 
 /* ----------------------------------------------------- */
