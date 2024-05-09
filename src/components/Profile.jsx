@@ -1,19 +1,33 @@
 import { user_profiles } from ".";
-import { useContext } from "react";
+import { useState, useContext } from "react";
 import { GlobalContext } from "./Provider";
+// Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import { faUser } from "@fortawesome/free-solid-svg-icons";
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LogoutIcon from '@mui/icons-material/Logout';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { faUser } from "@fortawesome/free-solid-svg-icons";
+// Calendar component MUI components import 
+import { InputAdornment } from '@mui/material';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+
 
 const Profile = () => {
   const { profile, setProfile } = useContext(GlobalContext);
   // console.log("Profile component :- ",profile);
   let currentDate = new Date().toDateString();
-  currentDate = currentDate.slice(4,currentDate.length);
+  const [value, setValue] = useState(dayjs(currentDate));
+  currentDate = currentDate.slice(4, currentDate.length);
+
+  const formatDate = (date) => {
+    const options = { month: 'long', day: '2-digit', year: 'numeric' };
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  };
   return (
     <>
       <div className='absolute flex flex-col top-0 left-0 lg:w-[200px] lg:h-screen bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]'>
@@ -27,15 +41,32 @@ const Profile = () => {
           </div>
         ))}
       </div>
-      {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] lg:h-screen border border-black">
+      {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] lg:h-screen border border-l-0 border-y-0 border-[#CBD5E1]">
         <div className="absolute mt-4 ml-8 border border-none">
           <h1 className="text-[23px] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
         </div>
-        <div className="absolute flex flex-row right-0 mt-4 mr-10 py-0.5 px-2 gap-x-1 cursor-pointer border">
-          <CalendarMonthIcon sx = {{ width: 20, height: 16, marginTop: '3px' }} />
+        <LocalizationProvider dateAdapter={AdapterDayjs} >
+          <div className="absolute flex flex-row right-0 mt-4 mr-10 cursor-pointer border border-none" >
+            <DatePicker
+              label=""
+              value={value}
+              onChange={(newValue) => setValue(newValue)}
+              format={formatDate(value)}
+              sx={{
+                '& .MuiInputBase-input': {
+                  width: '100px', 
+                  height: '10px', 
+                  paddingY: '12px',
+                },
+              }}
+            />
+          </div>
+        </LocalizationProvider>
+        {/* <div className="absolute flex flex-row right-0 mt-4 mr-10 py-0.5 px-2 gap-x-1 cursor-pointer border">
+          <CalendarMonthIcon sx={{ width: 20, height: 16, marginTop: '3px' }} />
           <p className="date text-[16px]">{currentDate}</p>
-          <ArrowDropDownIcon sx = {{ width: '18px' }} />
-        </div>
+          <ArrowDropDownIcon sx={{ width: '18px' }} />
+        </div> */}
       </div>}
     </>
   )
