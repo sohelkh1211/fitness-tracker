@@ -12,18 +12,22 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-
+// Importing pics
+import dashboard_fitness from '../assets/freepik-export-20240510014809PPSv.jpeg';
 
 const Profile = () => {
   const { profile, setProfile } = useContext(GlobalContext);
   // console.log("Profile component :- ",profile);
+
   let currentDate = new Date().toDateString();
   const [value, setValue] = useState(dayjs(currentDate));
+
   // To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024
   const formatDate = (date) => {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(date);
   };
+
   return (
     <>
       {/* For the side bar */}
@@ -46,7 +50,7 @@ const Profile = () => {
         </div>
         {/* MUI DatePicker component part */}
         <LocalizationProvider dateAdapter={AdapterDayjs} >
-          <div className="absolute flex flex-row right-0 mt-4 mr-10 cursor-pointer border border-none" >
+          <div className="absolute flex flex-row right-0 mt-4 lg:mr-10 cursor-pointer border border-none" >
             <DatePicker
               label=""
               value={value}
@@ -62,6 +66,14 @@ const Profile = () => {
             />
           </div>
         </LocalizationProvider>
+        {/* Welcome to Fitness! part */}
+        <div className="absolute flex mt-20 lg:ml-8 lg:w-[780px] lg:p-4 rounded-xl border">
+          <img src={dashboard_fitness} className="lg:w-[370px] lg:h-[190px] rounded-xl" />
+          <div className="flex flex-col"> {/* To display both p elements in column instead in row */}
+            <p className="lg:ml-5 lg:mt-14 lg:text-[28px] font-bold">Welcome to Fitness!</p>
+            <p className="lg:ml-8 lg:mt-2"> Start Today, Feel Stronger Tomorrow.</p>
+          </div>
+        </div>
       </div>}
     </>
   )
