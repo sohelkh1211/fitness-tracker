@@ -7,21 +7,30 @@ import Profile from "./Profile";
 
 export const user_profiles = [{
     name: "Dashboard",
-    icon: ""
 },
 {
     name: "Profile",
-    icon: ""
 },
 {
     name: "Exercise",
-    icon: ""
 },
 {
     name: "Logout",
-    icon: ""
 }
-]
+];
+
+export const dashboard_card = [{
+    name: "Heart Rate",
+    icon: "",
+},
+{
+    name: "Calories Burnt",
+    icon: "",
+},
+{
+    name: "Sleep",
+    icon: "",
+},]
 
 export {
     Startup,

@@ -1,4 +1,5 @@
 import { user_profiles } from ".";
+import { dashboard_card } from ".";
 import { useState, useContext } from "react";
 import { GlobalContext } from "./Provider";
 // Importing profile icons
@@ -13,7 +14,8 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Importing pics
-import dashboard_fitness from '../assets/freepik-export-20240510014809PPSv.jpeg';
+import dashboard_fitness from '../assets/Dashboard_fitness.png';
+import heart from '../assets/heart-rate.png';
 
 const Profile = () => {
   const { profile, setProfile } = useContext(GlobalContext);
@@ -73,6 +75,17 @@ const Profile = () => {
             <p className="lg:ml-5 lg:mt-14 lg:text-[28px] font-bold">Welcome to Fitness!</p>
             <p className="lg:ml-8 lg:mt-2"> Start Today, Feel Stronger Tomorrow.</p>
           </div>
+        </div>
+        <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
+          {dashboard_card.map((card, index) => (
+            <div key={index} className="w-[170px] p-2 rounded-lg border border-black">
+              <div className="flex flex-row justify-between gap-x-6">
+                <p className="text-left dashboard font-bold">{card.name}</p>
+                <img src={heart} className="w-[40px]" />
+              </div>
+              <p className="text-left mt-8">--- BPM</p>
+            </div>
+          ))}
         </div>
       </div>}
     </>
