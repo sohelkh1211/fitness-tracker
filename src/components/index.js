@@ -21,15 +21,15 @@ export const user_profiles = [{
 
 export const dashboard_card = [{
     name: "Heart Rate",
-    icon: "",
+    measure: "BPM",
 },
 {
     name: "Calories Burnt",
-    icon: "",
+    measure: "Kcal",
 },
 {
     name: "Sleep",
-    icon: "",
+    measure: "",
 },]
 
 export {

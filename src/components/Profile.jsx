@@ -16,6 +16,8 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Importing pics
 import dashboard_fitness from '../assets/Dashboard_fitness.png';
 import heart from '../assets/heart-rate.png';
+import fire from '../assets/fire.png';
+import sleep from '../assets/sleeping.png';
 
 const Profile = () => {
   const { profile, setProfile } = useContext(GlobalContext);
@@ -78,12 +80,12 @@ const Profile = () => {
         </div>
         <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
           {dashboard_card.map((card, index) => (
-            <div key={index} className="w-[170px] p-2 rounded-lg border border-black">
+            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} p-2 rounded-lg border border-black`}>
               <div className="flex flex-row justify-between gap-x-6">
                 <p className="text-left dashboard font-bold">{card.name}</p>
-                <img src={heart} className="w-[40px]" />
+                <img src={`${ card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8">--- BPM</p>
+              <p className="text-left mt-8 dashboard">--- {card.measure}</p>
             </div>
           ))}
         </div>
