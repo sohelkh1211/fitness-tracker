@@ -78,17 +78,18 @@ const Profile = () => {
             <p className="lg:ml-8 lg:mt-2"> Start Today, Feel Stronger Tomorrow.</p>
           </div>
         </div>
-        {/* #A1C4FD -> #C2E9FB , br #91A6FF -> #FFFFFF
-        bg-gradient-to-bl from-[#ff4f4f] to-[#ffb2b2]*/}
+        {/* #A1C4FD -> #C2E9FB , br #91A6FF -> #FFFFFF */}
+        {/*Heart rate :- bg-gradient-to-bl from-[#ff4f4f] to-[#ffb2b2]
+        Calories burnt :- bg-gradient-to-tl from-[#FFFF00] to-[#ff5151]*/}
         {/* tr #D3D3D3 -> #FF6B6B, #FF7878 -> #FFFFFF */}
         <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
           {dashboard_card.map((card, index) => (
-            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} p-2 rounded-lg ${card.name === "Sleep" ? 'bg-gradient-to-l from-[#A1C4FD] to-[#C2E9FB]' : card.name === "Heart Rate" ? 'bg-heart bg-cover hover:scale-105' : 'bg-gradient-to-tl from-[#FFFF00] to-[#ff5151]'}  border border-black`}>
+            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} p-2 rounded-lg ${card.name === "Sleep" ? 'bg-gradient-to-l from-[#A1C4FD] to-[#C2E9FB]' : card.name === "Heart Rate" ? 'bg-heart bg-cover hover:scale-105' : 'bg-calories bg-cover'}  border border-black`}>
               <div className="flex flex-row justify-between gap-x-6">
-                <p className="text-left dashboard font-bold">{card.name}</p>
+                <p className={`text-left dashboard font-bold`}>{card.name}</p>
                 <img src={`${card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard">--- {card.measure}</p>
+              <p className="text-left mt-8 dashboard ">--- {card.measure}</p>
             </div>
           ))}
         </div>
