@@ -30,7 +30,20 @@ export const dashboard_card = [{
 {
     name: "Sleep",
     measure: "",
-},]
+},];
+
+export const tracker_graph = [{
+    name: "Day",
+},
+{
+    name: "Weekly",
+},
+{
+    name: "Monthly",
+},
+{
+    name: "Yearly"
+}]
 
 export {
     Startup,

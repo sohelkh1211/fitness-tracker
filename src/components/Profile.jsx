@@ -1,5 +1,6 @@
 import { user_profiles } from ".";
 import { dashboard_card } from ".";
+import { tracker_graph } from ".";
 import { useState, useContext } from "react";
 import { GlobalContext } from "./Provider";
 // Importing profile icons
@@ -8,6 +9,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 // Calendar component MUI components import 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
@@ -26,6 +28,10 @@ const Profile = () => {
   let currentDate = new Date().toDateString();
   const [value, setValue] = useState(dayjs(currentDate));
 
+  const [date, setDate] = useState("Day"); {/* For displaying Weekly, Monthly graph */ }
+  const [open, setOpen] = useState(false); {/* For selecting trackers */ }
+  const [option, setOption] = useState("Heart Rate");
+
   // To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024
   const formatDate = (date) => {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
@@ -35,7 +41,7 @@ const Profile = () => {
   return (
     <>
       {/* For the side bar */}
-      <div className='absolute flex flex-col top-0 left-0 lg:w-[200px] lg:h-screen bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]'>
+      <div className='absolute flex flex-col top-0 left-0 lg:w-[200px] lg:h-[162%] bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]'>
         <div className='mt-4 mb-12 mx-auto border border-none'> {/* For Healthify title.*/}
           <h1 className='text-[23px] text-white'><span className='font-bold'>Health</span>ify</h1>
         </div>
@@ -48,7 +54,7 @@ const Profile = () => {
         ))}
       </div>
       {/* When profile value is Dashboard */}
-      {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] lg:h-screen border border-l-0 border-y-0 border-[#CBD5E1]">
+      {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] border border-l-0 border-y-0 border-[#CBD5E1]">
         <div className="absolute mt-4 ml-8 border border-none">
           <h1 className="text-[23px] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
         </div>
@@ -95,6 +101,34 @@ const Profile = () => {
             </div>
           ))}
         </div>
+        {/* User's trackers graph section */}
+        <div className="absolute flex mt-[470px] lg:ml-8 pb-4 lg:w-[780px] lg:h-[380px] rounded-md border">
+          <div className="mt-2 ml-[350px] justify-between space-x-3">
+            {tracker_graph.map((tracker, index) => (
+              <button key={index} className={`dashboard text-[14px] font-bold ${date === tracker.name ? 'bg-purple-600' : 'bg-purple-100'} border py-0.5 px-5`} onClick={() => setDate(tracker.name)}>{tracker.name}</button>
+            ))}
+            <MoreVertIcon className="cursor-pointer" onClick={() => setOpen(!open)} />
+          </div>
+          {/* For option teacker selection like Heart Rate*/}
+          {open && <div className="absolute mt-10 ml-[620px] w-[120px] px-3 py-1 flex flex-col bg-white z-20 items-start space-y-1 rounded-md border">
+            <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
+              setOption("Heart Rate");
+              setOpen(!open);
+            }}>Heart Rate</p>
+            <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
+              setOption("Calories Burnt");
+              setOpen(!open);
+            }}>Calories Burnt</p>
+            <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
+              setOption("Sleep");
+              setOpen(!open);
+            }}>Sleep</p>
+          </div>}
+          <div className="absolute flex items-center mt-12 lg:ml-5 w-[740px] h-[300px] rounded-xl border border-black">
+            <p className="mx-auto text-[35px]">No Data Available</p>
+          </div>
+        </div>
+        <div className="flex mt-[890px] border-none"></div>
       </div>}
     </>
   )
