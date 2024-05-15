@@ -24,6 +24,7 @@ module.exports = {
       backgroundImage: {
         "heart": "url('/src/assets/heart_rate.jpg')",
         "calories": "url('/src/assets/calories_burnt.png')",
+        "sleep": "url('/src/assets/Sleep_tracker.png')",
       },
     },
   },
