@@ -2,7 +2,7 @@ import { user_profiles } from ".";
 import { dashboard_card } from ".";
 import { tracker_graph } from ".";
 import { useState, useContext } from "react";
-import { GlobalContext } from "./Provider";
+import { GlobalContext } from "../context/Provider";
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';

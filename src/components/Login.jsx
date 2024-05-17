@@ -1,14 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import fitness_bg from '../assets/bg1.jpg';
 import { auth } from '../firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const navigate = useNavigate();
+
+  const { setLogin } = useContext(AuthContext);
 
   const signIn = (e) => {
     e.preventDefault();
@@ -19,6 +22,7 @@ const Login = () => {
     else {
       signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
         // console.log(userCredential);
+        setLogin(true);
         alert("Authorized User");
         navigate("/home");
       })
