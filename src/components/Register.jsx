@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
 import fitness_bg from '../assets/bg1.jpg';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -44,12 +45,12 @@ const Register = () => {
         e.preventDefault();
         // Basic validation logic
         if (!formData.name || !formData.email || !formData.gender || !formData.dob || !formData.height || !userCredential.password || !userCredential.confirmPassword) {
-            alert('Please fill in all fields');
+            toast.error('Please fill in all fields');
             return;
         }
         // Additional validation logic (e.g., password match)
         else if (userCredential.password !== userCredential.confirmPassword) {
-            alert('Passwords do not match');
+            toast.error('Passwords do not match');
             return;
         }
         // Form submission logic (e.g., sending data to server)
@@ -60,7 +61,7 @@ const Register = () => {
                 })
                 .catch((error) => {
                     // console.error("Error in sign up:", error);
-                    alert(error);
+                    toast.error(error);
                 });
 
             // console.log('Form submitted:', formData);
@@ -120,11 +121,11 @@ const Register = () => {
         }
         const res = await fetch('https://algo231-ee50a-default-rtdb.firebaseio.com/UserData.json', options);
         if (res) {
-            alert("Registered Successfully");
+            toast.error("Registered Successfully");
             navigate("/login");
         }
         else {
-            alert("Error Occured");
+            toast.error("Error Occured");
         }
     }
 

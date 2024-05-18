@@ -2,7 +2,9 @@ import { user_profiles } from ".";
 import { dashboard_card } from ".";
 import { tracker_graph } from ".";
 import { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
+import { toast } from 'react-hot-toast';
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -22,7 +24,8 @@ import fire from '../assets/fire.png';
 import sleep from '../assets/sleeping.png';
 
 const Profile = () => {
-  const { profile, setProfile } = useContext(GlobalContext);
+  const navigate = useNavigate();
+  const { profile, setProfile, setUser } = useContext(GlobalContext);
   // console.log("Profile component :- ",profile);
 
   let currentDate = new Date().toDateString();
@@ -49,7 +52,14 @@ const Profile = () => {
         {user_profiles.map((item, index) => (
           <div key={index} className="flex flex-row gap-x-3 w-fit ml-10 mb-6 cursor-pointer border border-none">
             {item.name === "Profile" ? <FontAwesomeIcon className={`mt-1 w-5 -ml-0.8 text-white ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} icon={faUser} /> : item.name === "Dashboard" ? <DashboardIcon sx={{ width: 18, height: 25, color: 'white' }} className={`${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : item.name === "Exercise" ? <FitnessCenterIcon sx={{ width: 19, height: 22, color: 'white' }} className={`mt-0.5 ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : item.name === "Logout" ? <LogoutIcon sx={{ width: 18, height: 22, color: 'white' }} className={`mt-0.5 ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : ''}
-            <p className={`text-white ${profile === item.name ? 'font-bold' : ''}`} onClick={() => setProfile(item.name)}>{item.name}</p>
+            <p className={`text-white ${profile === item.name ? 'font-bold' : ''}`} onClick={() => {
+              setProfile(item.name);
+              if (item.name === "Logout") {
+                setUser(null);
+                toast.success("Logged Out Successfully");
+                navigate("/");
+              }
+            }}>{item.name}</p>
           </div>
         ))}
       </div>

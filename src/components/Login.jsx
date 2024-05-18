@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react';
-import fitness_bg from '../assets/bg1.jpg';
-import { auth } from '../firebase';
+import fitness_bg from '../assets/bg1.jpg'; {/* Background image */}
+import { auth } from '../firebase'; {/* For firebase authentication */}
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { GlobalContext } from '../context/Provider';
+import toast, { Toaster } from 'react-hot-toast'; {/* For toast notification. */}
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +12,8 @@ const Login = () => {
 
   const navigate = useNavigate();
 
-  const { setLogin } = useContext(AuthContext);
+  // To set "user" to true if he is an authorized user.
+  const { setUser } = useContext(GlobalContext);
 
   const signIn = (e) => {
     e.preventDefault();
@@ -22,18 +24,19 @@ const Login = () => {
     else {
       signInWithEmailAndPassword(auth, email, password).then((userCredential) => {
         // console.log(userCredential);
-        setLogin(true);
-        alert("Authorized User");
-        navigate("/home");
+        // setLogin(true);
+        toast.success("Logged in Successfully");
+        setUser(true);
+        navigate("/home", { replace: true });
       })
         .catch((error) => {
           // console.log(error);
           switch(error.code){
             case "auth/invalid-credential":
-              alert("Invalid Email or Password");
+              toast.error("Invalid Email or Password");
               break
             default:
-              alert("Error occured ", error);
+              toast.error("Error occured ", error);
               console.log(error.message);
               break;
           }
