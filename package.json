@@ -23,6 +23,8 @@
     "@mui/x-date-pickers": "^7.3.2",
     "dayjs": "^1.11.11",
     "firebase": "^10.8.1",
+    "material-ui-dropzone": "^3.5.0",
+    "primeicons": "^7.0.0",
     "primereact": "^10.6.5",
     "react": "^18.2.0",
     "react-avatar-edit": "^1.2.0",

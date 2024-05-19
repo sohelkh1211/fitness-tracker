@@ -17,6 +17,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+// import Dialog from '@mui/material/Dialog';
 // Importing pics
 import dashboard_fitness from '../assets/Dashboard_fitness.png';
 import heart from '../assets/heart-rate.png';
@@ -24,9 +25,9 @@ import fire from '../assets/fire.png';
 import sleep from '../assets/sleeping.png';
 import user from '../assets/user.png';
 // Prime react components
-import { InputText } from 'primereact/inputtext';
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
+import 'primeicons/primeicons.css';
 import Avatar from 'react-avatar-edit';
 
 const Profile = () => {
@@ -43,12 +44,12 @@ const Profile = () => {
 
   // For user profile image
   const [imagecrop, setImagecrop] = useState(false);
-  const [image, setImage] = useState("");
   const [src, setSrc] = useState(false);
   const [prof, setProf] = useState([]);
   const [preview, setPreview] = useState();
 
   const profileFinal = prof.map((item) => item.preview);
+  console.log(profileFinal);
 
   // To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024
   const formatDate = (date) => {
@@ -99,41 +100,30 @@ const Profile = () => {
         <p className="mt-2 font-bold text-[17px]">Mohammed Sohel</p>
         <Dialog
           visible={imagecrop}
-          className="bg-white"
-          header={() => (
-            <p className="font-bold ">Update Profile</p>
-          )}
+          className=" bg-purple-50 rounded-lg"
           onHide={() => setImagecrop(false)}
         >
           <div className="flex flex-col items-center">
             <Avatar
-              width={500}
-              height={400}
+              width={350}
+              height={200}
               onCrop={onCrop}
               onClose={onClose}
               src={src}
               shadingColor={"#474649"}
               backgroundColor={"#474649"}
             />
-                <Button
-                  onClick={savecropImage}
-                  label="Save"
-                  icon="pi pi-check"
-                />
+            <div className="flex mt-2 mb-2 mx-auto">
+              <Button
+                onClick={savecropImage}
+                className="cursor-pointer space-x-2 px-2 py-1 font-bold bg-white text-purple-400 hover:border-purple-400 hover:border-[1.5px] rounded-md shadow-lg border"
+                label="Save"
+                icon="pi pi-check"
+                severity="success" text raised
+              />
+            </div>
           </div>
         </Dialog>
-        <InputText type="file" accept="image/*"
-          style={{ display: "none" }}
-          onChange={(event) => {
-            const file = event.target.files[0];
-            if (file && file.type.substring(0, 5) === "image") {
-              setImage(file);
-            } else {
-              setImage(null);
-            }
-          }}
-        />
-        {/* <InputText type="file" /> */}
       </div>
 
       {/* When profile value is Dashboard */}
