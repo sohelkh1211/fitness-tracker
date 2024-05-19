@@ -22,6 +22,12 @@ import dashboard_fitness from '../assets/Dashboard_fitness.png';
 import heart from '../assets/heart-rate.png';
 import fire from '../assets/fire.png';
 import sleep from '../assets/sleeping.png';
+import user from '../assets/user.png';
+// Prime react components
+import { InputText } from 'primereact/inputtext';
+import { Dialog } from 'primereact/dialog';
+import { Button } from 'primereact/button';
+import Avatar from 'react-avatar-edit';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -35,11 +41,33 @@ const Profile = () => {
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
   const [option, setOption] = useState("Heart Rate");
 
+  // For user profile image
+  const [imagecrop, setImagecrop] = useState(false);
+  const [image, setImage] = useState("");
+  const [src, setSrc] = useState(false);
+  const [prof, setProf] = useState([]);
+  const [preview, setPreview] = useState();
+
+  const profileFinal = prof.map((item) => item.preview);
+
   // To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024
   const formatDate = (date) => {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(date);
   };
+
+  const onClose = () => {
+    setPreview(null);
+  }
+
+  const onCrop = (view) => {
+    setPreview(view);
+  }
+
+  const savecropImage = () => {
+    setProf([...prof, { preview }]);
+    setImagecrop(false);
+  }
 
   return (
     <>
@@ -63,6 +91,51 @@ const Profile = () => {
           </div>
         ))}
       </div>
+
+      {/* For right side bar */}
+      <div className="absolute flex flex-col top-14 ml-[1070px] border-none">
+        <img src={profileFinal.length ? profileFinal : user} className="w-[100px] cursor-pointer mx-auto"
+          onClick={() => setImagecrop(true)} alt="" />
+        <p className="mt-2 font-bold text-[17px]">Mohammed Sohel</p>
+        <Dialog
+          visible={imagecrop}
+          className="bg-white"
+          header={() => (
+            <p className="font-bold ">Update Profile</p>
+          )}
+          onHide={() => setImagecrop(false)}
+        >
+          <div className="flex flex-col items-center">
+            <Avatar
+              width={500}
+              height={400}
+              onCrop={onCrop}
+              onClose={onClose}
+              src={src}
+              shadingColor={"#474649"}
+              backgroundColor={"#474649"}
+            />
+                <Button
+                  onClick={savecropImage}
+                  label="Save"
+                  icon="pi pi-check"
+                />
+          </div>
+        </Dialog>
+        <InputText type="file" accept="image/*"
+          style={{ display: "none" }}
+          onChange={(event) => {
+            const file = event.target.files[0];
+            if (file && file.type.substring(0, 5) === "image") {
+              setImage(file);
+            } else {
+              setImage(null);
+            }
+          }}
+        />
+        {/* <InputText type="file" /> */}
+      </div>
+
       {/* When profile value is Dashboard */}
       {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] border border-l-0 border-y-0 border-[#CBD5E1]">
         <div className="absolute mt-4 ml-8 border border-none">

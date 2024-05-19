@@ -4,7 +4,7 @@ import { auth } from '../firebase'; {/* For firebase authentication */}
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigate } from 'react-router-dom';
 import { GlobalContext } from '../context/Provider';
-import toast, { Toaster } from 'react-hot-toast'; {/* For toast notification. */}
+import toast from 'react-hot-toast'; {/* For toast notification. */}
 
 const Login = () => {
   const [email, setEmail] = useState("");
