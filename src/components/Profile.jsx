@@ -1,7 +1,7 @@
 import { user_profiles } from ".";
 import { dashboard_card } from ".";
 import { tracker_graph } from ".";
-import { useState, useContext } from "react";
+import { useState, useContext, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
@@ -25,10 +25,16 @@ import fire from '../assets/fire.png';
 import sleep from '../assets/sleeping.png';
 import user from '../assets/user.png';
 // Prime react components
+import { InputText } from 'primereact/inputtext'
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import 'primeicons/primeicons.css';
-import Avatar from 'react-avatar-edit';
+import Avatar from 'react-avatar-edit'; {/* To upload and crop the image. */ }
+// Sending user image to firebase
+import { v4 as uuid } from 'uuid';
+import { db, storage } from "../firebase";
+import { ref as dbRef, set } from 'firebase/database';
+import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -42,33 +48,70 @@ const Profile = () => {
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
   const [option, setOption] = useState("Heart Rate");
 
-  // For user profile image
-  const [imagecrop, setImagecrop] = useState(false);
-  const [src, setSrc] = useState(false);
-  const [prof, setProf] = useState([]);
-  const [preview, setPreview] = useState();
-
-  const profileFinal = prof.map((item) => item.preview);
-  console.log(profileFinal);
-
-  // To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024
+  //----------- To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 -----------//
   const formatDate = (date) => {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(date);
   };
 
+  // ----------- For user profile image ---------------------//
+  const [imagecrop, setImagecrop] = useState(false); {/* To display or hide dialogue box. */ }
+  const [src, setSrc] = useState(false); {/* Required prop of Avatar */ }
+  const [prof, setProf] = useState([]); {/* To store cropped image in the form of object i.e { preview : view } */ }
+  const [preview, setPreview] = useState(); {/* Required state variable to save cropped image temporarily in preview. */ }
+
+  // To fetch final image from prof state which is an array of object i.e prof = [ { preview: } ].
+  const profileFinal = prof.map((item) => item.preview);
+
+  // set preview to null when Avatar get closed.
   const onClose = () => {
     setPreview(null);
   }
 
+  /* Set preview to the croped image i.e view */
   const onCrop = (view) => {
     setPreview(view);
   }
 
-  const savecropImage = () => {
-    setProf([...prof, { preview }]);
+  // Store { preview : view } to the prof array. Also, set imagecrop to false because we need to close the dialogue box.
+  const savecropImage = async () => {
+    let updatedProf = [...prof, { preview }];
+    setProf(updatedProf);
+    const img = updatedProf.map((item) => item.preview);
+    console.log('prof of savcropImage :- ', img);
     setImagecrop(false);
+    await uploadFile(img);
   }
+
+  // ------------ To upload user image to Firebase -------------- //
+  const uploadFile = async (file) => {
+    console.log("uploadedFile :- ",file);
+    if (file[0] === undefined) {
+      toast.error("Please select an image");
+      return;
+    }
+
+    const imageRef = storageRef(storage, `images/${uuid()}`);
+
+    try {
+      const snapshot = await uploadBytes(imageRef, file);
+      const url = await getDownloadURL(snapshot.ref);
+      saveData(url);
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const saveData = async (url) => {
+    const imageUrlRef = dbRef(db, 'images/' + uuid());
+
+    try {
+      await set(imageUrlRef, { imageUrl: url });
+      toast.success("Image uploaded successfully");
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   return (
     <>
@@ -95,13 +138,24 @@ const Profile = () => {
 
       {/* For right side bar */}
       <div className="absolute flex flex-col top-14 ml-[1070px] border-none">
-        <img src={profileFinal.length ? profileFinal : user} className="w-[100px] cursor-pointer mx-auto"
+        {/* profileFinal.length determines whether the image is uploaded or not. {profileFinal[0] !== undefined} If user accidentially clicks on save button then profileFinal[0] = undefined  */}
+        {/* <InputText
+          type="file"
+          accept="image/*"
+          ref={fileInputref}
+          style={{ display: "none" }}
+          onChange={handleFileChange}
+        /> */}
+        <img src={profileFinal.length && profileFinal[0] !== undefined ? profileFinal : user} className="w-[100px] cursor-pointer mx-auto"
           onClick={() => setImagecrop(true)} alt="" />
         <p className="mt-2 font-bold text-[17px]">Mohammed Sohel</p>
         <Dialog
           visible={imagecrop}
-          className=" bg-purple-50 rounded-lg"
+          className="bg-purple-50 rounded-lg"
           onHide={() => setImagecrop(false)}
+          header={() => (
+            <p className="font-bold ">Upload Image</p>
+          )}
         >
           <div className="flex flex-col items-center">
             <Avatar
@@ -124,6 +178,7 @@ const Profile = () => {
             </div>
           </div>
         </Dialog>
+
       </div>
 
       {/* When profile value is Dashboard */}
