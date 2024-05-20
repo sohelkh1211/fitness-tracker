@@ -33,7 +33,8 @@ import Avatar from 'react-avatar-edit'; {/* To upload and crop the image. */ }
 // Sending user image to firebase
 import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
-import { ref as dbRef, set } from 'firebase/database';
+import { auth } from "../firebase";
+import { ref as dbRef, set, update as databaseUpdate } from 'firebase/database';
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
 
 const Profile = () => {
@@ -78,40 +79,58 @@ const Profile = () => {
     let updatedProf = [...prof, { preview }];
     setProf(updatedProf);
     const img = updatedProf.map((item) => item.preview);
-    console.log('prof of savcropImage :- ', img);
     setImagecrop(false);
-    await uploadFile(img);
+    if(img.length >= 2) {
+      img.shift();
+    }
+    await uploadFile(img[0]);
   }
 
   // ------------ To upload user image to Firebase -------------- //
-  const uploadFile = async (file) => {
-    console.log("uploadedFile :- ",file);
-    if (file[0] === undefined) {
+  const uploadFile = async (base64Image) => {
+    if (base64Image === undefined) {
       toast.error("Please select an image");
       return;
     }
 
-    const imageRef = storageRef(storage, `images/${uuid()}`);
+    const [contentType, base64String] = base64Image.split(';base64,'); 
+    const imageBlob = base64ToBlob(base64Image, contentType.split(':')[1]); // First convert base4Image to Blob inorder to display image.
+    
+    // Create a reference to 'images/uuid() where each uid is unique.'
+    const imageRef = storageRef(storage, `images/${uuid()}`); 
 
-    try {
-      const snapshot = await uploadBytes(imageRef, file);
-      const url = await getDownloadURL(snapshot.ref);
-      saveData(url);
-    } catch (error) {
-      toast.error(error.message);
-    }
+    uploadBytes(imageRef, imageBlob).then((snapshot) => {
+      console.log("Data :- ", snapshot);
+      getDownloadURL(snapshot.ref).then((url) => {
+        toast.success("Image uploaded ✨");
+        console.log("File URL :- ",url);
+        const user = auth.currentUser;
+        const userRef = dbRef(db, `UserData/${user.uid}`);
+        databaseUpdate(userRef, { image: url });
+      }).catch((error) => {
+        toast.error(error);
+      })
+    }).catch((error) => {
+      toast.error(error);
+    })
   };
 
-  const saveData = async (url) => {
-    const imageUrlRef = dbRef(db, 'images/' + uuid());
-
-    try {
-      await set(imageUrlRef, { imageUrl: url });
-      toast.success("Image uploaded successfully");
-    } catch (error) {
-      toast.error(error.message);
+  const base64ToBlob = (base64, contentType) => {
+  const byteCharacters = atob(base64.split(',')[1]);
+  const byteArrays = [];
+  
+  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+    const slice = byteCharacters.slice(offset, offset + 512);
+    const byteNumbers = new Array(slice.length);
+    for (let i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i);
     }
-  };
+    const byteArray = new Uint8Array(byteNumbers);
+    byteArrays.push(byteArray);
+  }
+  
+  return new Blob(byteArrays, { type: contentType });
+};
 
   return (
     <>
