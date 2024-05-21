@@ -1,7 +1,7 @@
 import { user_profiles } from ".";
 import { dashboard_card } from ".";
 import { tracker_graph } from ".";
-import { useState, useContext, useRef } from "react";
+import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
@@ -25,7 +25,6 @@ import fire from '../assets/fire.png';
 import sleep from '../assets/sleeping.png';
 import user from '../assets/user.png';
 // Prime react components
-import { InputText } from 'primereact/inputtext'
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import 'primeicons/primeicons.css';
@@ -34,8 +33,11 @@ import Avatar from 'react-avatar-edit'; {/* To upload and crop the image. */ }
 import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
 import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, set, update as databaseUpdate } from 'firebase/database';
 import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
+import { fetchUserData } from "../utils/fetchData";
+import { setUserId } from "firebase/analytics";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -49,13 +51,14 @@ const Profile = () => {
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
   const [option, setOption] = useState("Heart Rate");
 
-  //----------- To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 -----------//
+  // **************** To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 **************** //
   const formatDate = (date) => {
     const options = { month: 'long', day: '2-digit', year: 'numeric' };
     return new Intl.DateTimeFormat('en-US', options).format(date);
   };
+  // **************************************************************************** //
 
-  // ----------- For user profile image ---------------------//
+  // ************* For user profile image ****************** //
   const [imagecrop, setImagecrop] = useState(false); {/* To display or hide dialogue box. */ }
   const [src, setSrc] = useState(false); {/* Required prop of Avatar */ }
   const [prof, setProf] = useState([]); {/* To store cropped image in the form of object i.e { preview : view } */ }
@@ -80,30 +83,30 @@ const Profile = () => {
     setProf(updatedProf);
     const img = updatedProf.map((item) => item.preview);
     setImagecrop(false);
-    if(img.length >= 2) {
+    if (img.length >= 2) {
       img.shift();
     }
     await uploadFile(img[0]);
   }
 
-  // ------------ To upload user image to Firebase -------------- //
+  // **************** To upload user image to Firebase ******************* //
   const uploadFile = async (base64Image) => {
     if (base64Image === undefined) {
       toast.error("Please select an image");
       return;
     }
 
-    const [contentType, base64String] = base64Image.split(';base64,'); 
+    const [contentType, base64String] = base64Image.split(';base64,');
     const imageBlob = base64ToBlob(base64Image, contentType.split(':')[1]); // First convert base4Image to Blob inorder to display image.
-    
+
     // Create a reference to 'images/uuid() where each uid is unique.'
-    const imageRef = storageRef(storage, `images/${uuid()}`); 
+    const imageRef = storageRef(storage, `images/${uuid()}`);
 
     uploadBytes(imageRef, imageBlob).then((snapshot) => {
       console.log("Data :- ", snapshot);
       getDownloadURL(snapshot.ref).then((url) => {
         toast.success("Image uploaded ✨");
-        console.log("File URL :- ",url);
+        console.log("File URL :- ", url);
         const user = auth.currentUser;
         const userRef = dbRef(db, `UserData/${user.uid}`);
         databaseUpdate(userRef, { image: url });
@@ -116,21 +119,41 @@ const Profile = () => {
   };
 
   const base64ToBlob = (base64, contentType) => {
-  const byteCharacters = atob(base64.split(',')[1]);
-  const byteArrays = [];
-  
-  for (let offset = 0; offset < byteCharacters.length; offset += 512) {
-    const slice = byteCharacters.slice(offset, offset + 512);
-    const byteNumbers = new Array(slice.length);
-    for (let i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i);
+    const byteCharacters = atob(base64.split(',')[1]);
+    const byteArrays = [];
+
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+      const slice = byteCharacters.slice(offset, offset + 512);
+      const byteNumbers = new Array(slice.length);
+      for (let i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      byteArrays.push(byteArray);
     }
-    const byteArray = new Uint8Array(byteNumbers);
-    byteArrays.push(byteArray);
-  }
-  
-  return new Blob(byteArrays, { type: contentType });
-};
+
+    return new Blob(byteArrays, { type: contentType });
+  };
+  // *************************************************** //
+
+  // ********************** Fetching data from firebase ************************* //
+  const [user_id,setUser_id] = useState(null);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if(user){
+        setUser_id(user.uid);
+      }
+      else{
+        setUserId(null);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const data = fetchUserData(user_id);
+  // ************************************************************* //
 
   return (
     <>
@@ -167,7 +190,7 @@ const Profile = () => {
         /> */}
         <img src={profileFinal.length && profileFinal[0] !== undefined ? profileFinal : user} className="w-[100px] cursor-pointer mx-auto"
           onClick={() => setImagecrop(true)} alt="" />
-        <p className="mt-2 font-bold text-[17px]">Mohammed Sohel</p>
+        <p className="mt-2 font-bold text-[17px]">{data.first_name} {data.last_name}</p>
         <Dialog
           visible={imagecrop}
           className="bg-purple-50 rounded-lg"

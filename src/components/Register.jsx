@@ -1,9 +1,11 @@
 import React, { useState } from 'react'
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebase';
 import fitness_bg from '../assets/bg1.jpg';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+// Firebase
+import { auth, db } from '../firebase';
+import { ref as dbRef, set } from 'firebase/database';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -13,7 +15,8 @@ const Register = () => {
     }
 
     const [formData, setFormData] = useState({
-        name: '',
+        first_name: '',
+        last_name: '',
         email: '',
         gender: '',
         dob: '',
@@ -44,7 +47,7 @@ const Register = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         // Basic validation logic
-        if (!formData.name || !formData.email || !formData.gender || !formData.dob || !formData.height || !userCredential.password || !userCredential.confirmPassword) {
+        if (!formData.first_name || !formData.last_name || !formData.email || !formData.gender || !formData.dob || !formData.height || !userCredential.password || !userCredential.confirmPassword) {
             toast.error('Please fill in all fields');
             return;
         }
@@ -56,8 +59,9 @@ const Register = () => {
         // Form submission logic (e.g., sending data to server)
         else {
             signUp(e)
-                .then((error) => {
-                    getData(e);
+                .then((uid) => {
+                    console.log(uid);
+                    getData(uid);
                 })
                 .catch((error) => {
                     // console.error("Error in sign up:", error);
@@ -74,8 +78,8 @@ const Register = () => {
         const password1 = userCredential["password"];
         return new Promise((resolve, reject) => {
             createUserWithEmailAndPassword(auth, email1, password1)
-                .then((userCredential) => {
-                    resolve(""); // Resolve with an empty string if sign up is successful
+                .then((user_Credential) => {
+                    resolve(user_Credential.user.uid); // Resolve with an empty string if sign up is successful
                 })
                 .catch((error) => {
                     let errorMessage = "";
@@ -102,44 +106,40 @@ const Register = () => {
         });
     }
 
-    const getData = async (e) => {
-        const { name, email, gender, dob, height } = formData;
+    const getData = async (uid) => {
+        const { first_name, last_name, email, gender, dob, height } = formData;
         var dob1 = new Date(dob);
         var month_diff = Date.now() - dob1.getTime();
         var age_dt = new Date(month_diff);   //convert the calculated difference in date format
         var year = age_dt.getUTCFullYear();  //extract year from date
         var age = Math.abs(year - 1970);  //now calculate the age of the user
-        e.preventDefault();
-        const options = {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                name, email, gender, dob, age, height
-            })
-        }
-        const res = await fetch('https://algo231-ee50a-default-rtdb.firebaseio.com/UserData.json', options);
-        if (res) {
-            toast.error("Registered Successfully");
+
+        const userRef = dbRef(db, 'UserData/' + uid);
+        try {
+            await set(userRef, {
+                first_name, last_name, email, gender, dob, age, height
+            });
+            toast.success("Registered Successfully");
             navigate("/login");
+        } catch (error) {
+            toast.error(error);
         }
-        else {
-            toast.error("Error Occured");
-        }
+
     }
 
     return (
         <>
             <img src={fitness_bg} className='fixed top-0 left-0 sm:h-full sm:w-full xs:w-full xs:h-full object-cover blur-sm ' />
-            <div className='relative flex mx-auto sm:w-[600px] sm:h-[570px] xs:w-full xs:h-[520px] rounded-lg container'>
+            <div className='relative flex mx-auto sm:w-[600px] sm:h-[640px] xs:w-full xs:h-[580px] rounded-lg container'>
                 <form onSubmit={handleSubmit} method='POST'>
                     <div className='flex sm:ml-[180px] xs:ml-[40px] border-none border-black sm:mt-14 xs:mt-6 w-fit'>
                         <h1 className='sm:text-[35px] xs:text-[25px] font-bold'>Create Account</h1>
                     </div>
                     <div className='absolute sm:mt-4 xs:mt-2 sm:ml-[110px] xs:ml-[25px] sm:pl-[10px] xs:pl-0 pb-4 flex flex-col sm:w-[400px] xs:w-[200px] pt-6 justify-between gap-y-4 border-none border-[1.35px] border-black'>
-                        <input type="text" name="name" placeholder="Name" value={formData.name} onChange={handleInputChange} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
-                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        {/* The onkeydown event occurs when the user presses a key on the keyboard. In first_name & laast_name we are restricting user to press spacebar key. */}
+                        <input type="text" name="first_name" placeholder="First Name" value={formData.first_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
+                        <input type="text" name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
+                        <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
                         <select name="gender" className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' value={formData.gender} onChange={handleInputChange}>
                             <option value="gender">Gender</option>
                             <option value="male">Male</option>
