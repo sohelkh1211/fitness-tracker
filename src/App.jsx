@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useContext } from 'react'
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import './App.css';
 import { Preloader, Register, Login, Startup, Startup1, Profile } from './components';
@@ -7,9 +7,11 @@ import Home from './pages/Home';
 import ExerciseDetail from './pages/ExerciseDetail';
 import ProtectedRoute from './context/ProtectedRoute';
 import { Toaster } from 'react-hot-toast';
+import { GlobalContext } from './context/Provider';
 
 function App() {
   const [active, setActive] = useState(true);
+  const { user } = useContext(GlobalContext);
 
   useEffect(() => {
     const timeoutID = setTimeout(() => {
@@ -47,7 +49,7 @@ function App() {
       }}
       />
       <Routes>
-        {active ? <Route path="/" element={<Preloader />} /> : <Route path="/" element={<Startup />} />}
+        {active && !user ? <Route path="/" element={<Preloader />} /> : <Route path="/" element={<Startup />} /> }
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Provider><Login /></Provider>} /> {/* Provider is needed to access setUser callback function. */}
         {/* Due to react-router-dom v6, All the children of Routes nust be Route only.

@@ -34,10 +34,9 @@ import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { ref as dbRef, set, update as databaseUpdate } from 'firebase/database';
-import { getDownloadURL, ref as storageRef, uploadBytes } from "firebase/storage";
+import { ref as dbRef, update as databaseUpdate } from 'firebase/database';
+import { getDownloadURL, ref as storageRef, uploadBytes, deleteObject } from "firebase/storage";
 import { fetchUserData } from "../utils/fetchData";
-import { setUserId } from "firebase/analytics";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -59,6 +58,17 @@ const Profile = () => {
   // **************************************************************************** //
 
   // ************* For user profile image ****************** //
+  const [data, setData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    age: '',
+    gender: '',
+    dob: '',
+    height: '',
+    image: '',
+    weight: ''
+  });
   const [imagecrop, setImagecrop] = useState(false); {/* To display or hide dialogue box. */ }
   const [src, setSrc] = useState(false); {/* Required prop of Avatar */ }
   const [prof, setProf] = useState([]); {/* To store cropped image in the form of object i.e { preview : view } */ }
@@ -80,12 +90,16 @@ const Profile = () => {
   // Store { preview : view } to the prof array. Also, set imagecrop to false because we need to close the dialogue box.
   const savecropImage = async () => {
     let updatedProf = [...prof, { preview }];
+    console.log("Updated prof :- ", updatedProf);
+    // If user is uploading image second time then we need to first remove his previous image.
+    // Because length of updatedProf array becomes 2 when he re-uploads image.
+    if (updatedProf.length >= 2) {
+      console.log("Done");
+      updatedProf.shift();
+    }
     setProf(updatedProf);
     const img = updatedProf.map((item) => item.preview);
     setImagecrop(false);
-    if (img.length >= 2) {
-      img.shift();
-    }
     await uploadFile(img[0]);
   }
 
@@ -95,7 +109,7 @@ const Profile = () => {
       toast.error("Please select an image");
       return;
     }
-
+    deleteFile(); // This function is defined at line 149 below. To delete exisiting image from firebase/storage when user re-uploads image.
     const [contentType, base64String] = base64Image.split(';base64,');
     const imageBlob = base64ToBlob(base64Image, contentType.split(':')[1]); // First convert base4Image to Blob inorder to display image.
 
@@ -103,10 +117,9 @@ const Profile = () => {
     const imageRef = storageRef(storage, `images/${uuid()}`);
 
     uploadBytes(imageRef, imageBlob).then((snapshot) => {
-      console.log("Data :- ", snapshot);
       getDownloadURL(snapshot.ref).then((url) => {
         toast.success("Image uploaded ✨");
-        console.log("File URL :- ", url);
+        // console.log("File URL :- ", url);
         const user = auth.currentUser;
         const userRef = dbRef(db, `UserData/${user.uid}`);
         databaseUpdate(userRef, { image: url });
@@ -136,28 +149,46 @@ const Profile = () => {
   };
   // *************************************************** //
 
+  // ****************** To delete file or image from firebase storage when user re-uploads his/her image ***********//
+  const deleteFile = async () => {
+    if (data.image !== '') {
+      const fileRef = storageRef(storage, data.image);
+      await deleteObject(fileRef);
+      // console.log("File deleted successfully");
+    }
+
+  }
+
   // ********************** Fetching data from firebase ************************* //
-  const [user_id,setUser_id] = useState(null);
+  const [user_id, setUser_id] = useState(null);
+  // onAuthStateChanged is required because auth changes frequently, it changes from null to the value of currentUser.
+  // And we need user's unique ID to fetch his/her data from firebase.
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if(user){
+      if (user) {
         setUser_id(user.uid);
       }
-      else{
-        setUserId(null);
+      else {
+        setUser_id(null);
       }
     });
 
     return () => unsubscribe();
   }, []);
 
-  const data = fetchUserData(user_id);
+  const fetchData = async (user_id) => {
+    const res1 = await fetchUserData(user_id);
+    setData({
+      ...res1
+    });
+  }
+  fetchData(user_id);
   // ************************************************************* //
 
   return (
     <>
-      {/* For the side bar */}
+      {/* ************ For the side bar *************** */}
       <div className='absolute flex flex-col top-0 left-0 lg:w-[200px] lg:h-[162%] bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]'>
         <div className='mt-4 mb-12 mx-auto border border-none'> {/* For Healthify title.*/}
           <h1 className='text-[23px] text-white'><span className='font-bold'>Health</span>ify</h1>
@@ -177,18 +208,12 @@ const Profile = () => {
           </div>
         ))}
       </div>
+      {/* ********************************************** */}
 
-      {/* For right side bar */}
-      <div className="absolute flex flex-col top-14 ml-[1070px] border-none">
-        {/* profileFinal.length determines whether the image is uploaded or not. {profileFinal[0] !== undefined} If user accidentially clicks on save button then profileFinal[0] = undefined  */}
-        {/* <InputText
-          type="file"
-          accept="image/*"
-          ref={fileInputref}
-          style={{ display: "none" }}
-          onChange={handleFileChange}
-        /> */}
-        <img src={profileFinal.length && profileFinal[0] !== undefined ? profileFinal : user} className="w-[100px] cursor-pointer mx-auto"
+      {/* *************** For right side bar ****************** */}
+      {/* User's Image upload */}
+      <div className="absolute flex flex-col top-14 ml-[1080px] border-none">
+        <img src={data.image ? data.image : user} className="w-[100px] cursor-pointer mx-auto brightness-50"
           onClick={() => setImagecrop(true)} alt="" />
         <p className="mt-2 font-bold text-[17px]">{data.first_name} {data.last_name}</p>
         <Dialog
@@ -220,10 +245,43 @@ const Profile = () => {
             </div>
           </div>
         </Dialog>
-
+        <a className="lg:text-[13px] lg:mt-2 cursor-pointer text-cyan-600" href="/user/profile">Edit health details</a>
       </div>
 
-      {/* When profile value is Dashboard */}
+      {/* Displaying user's weight, height and age */}
+      <div className="absolute flex flex-row lg:px-3 lg:py-2 lg:top-[240px] lg:ml-[1050px] justify-between lg:gap-x-2 bg-[#f4faff] rounded-md border">
+        <div>
+          <p className="lg:text-[14px] font-bold">Weight</p>
+          <p className="lg:text-[14px]">{data.weight ? data.weight : '---'}</p>
+        </div>
+        <div>
+          <p className="lg:text-[14px] font-bold">Height</p>
+          <p className="lg:text-[14px]">{data.height * 30.48} cm</p>
+        </div>
+        <div>
+          <p className="lg:text-[14px] font-bold">Age</p>
+          <p className="lg:text-[14px]">{data.age}</p>
+        </div>
+      </div>
+
+      {/* Schedule Part */}
+      <div className="absolute flex flex-col lg:top-[325px] lg:ml-[1030px] border border-none">
+        <p className="font-bold dashboard_schedule">Scheduled</p>
+      </div>
+      <div className="absolute flex flex-col lg:top-[360px] lg:ml-[1035px] justify-between gap-y-2">
+        {/* Apply map function to show all scheduled task from firebase */}
+        <div className="flex flex-col lg:px-2.5 lg:py-1 rounded-md border border-black">
+          <div className="flex flex-row border w-[170px] justify-between border-none">
+            <p className="text-[14px] font-bold text-left">Yoga</p>
+            <MoreVertIcon className="cursor-pointer rotate-90" sx={{ width: '18px'}}  />
+          </div>
+          <p className="text-[12px] -mt-0.5 text-left">Today, 9 AM - 10 AM</p>
+        </div>
+        {/* **********************************************************   */}
+      </div>
+      {/* ********************************************** */}
+
+      {/* ******************* When profile value is Dashboard i.e profile === "Dashboard" **************** */}
       {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] border border-l-0 border-y-0 border-[#CBD5E1]">
         <div className="absolute mt-4 ml-8 border border-none">
           <h1 className="text-[23px] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
@@ -300,6 +358,7 @@ const Profile = () => {
         </div>
         <div className="flex mt-[890px] border-none"></div>
       </div>}
+      {/* ********************************************** */}
     </>
   )
 }

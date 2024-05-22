@@ -28,22 +28,9 @@ import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref as dbRef, get } from "firebase/database";
 
-export const fetchUserData = (uid) => {
-  const [res, setRes] = useState('');
-
-  useEffect(() => {
-    const fetchData1 = async () => {
-      try {
-        const userRef = dbRef(db, `UserData/${uid}`);
-        const snapshot = await get(userRef);
-        setRes(snapshot.val());
-      }
-      catch (error) {
-        console.log(error);
-      }
-    }
-    fetchData1();
-  }, [uid]);
-
-  return res;
+export const fetchUserData = async (uid) => {
+    const userRef = dbRef(db, `UserData/${uid}`); // To get reference to firebase database with url as "db/UserData/${uid}"
+    const snapshot = await get(userRef); // To fetch Data snapshot of user with the help of userRef.
+    let res = await snapshot.val(); // set the value of res as the value of snapshot i.e snapshot.val()
+    return res;
 }
