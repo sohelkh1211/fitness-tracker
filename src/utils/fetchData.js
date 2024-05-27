@@ -24,7 +24,6 @@ export const fetchData = async (url, options) => {
 // ******************************************************* //
 
 // ******************* For fetching user data ***************** //
-import { useEffect, useState } from "react";
 import { db } from "../firebase";
 import { ref as dbRef, get } from "firebase/database";
 

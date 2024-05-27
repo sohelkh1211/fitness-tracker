@@ -5,6 +5,7 @@ import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
+import TestCalendar from "./TestCalendar";
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -12,12 +13,12 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 // Calendar component MUI components import 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-// import Dialog from '@mui/material/Dialog';
 // Importing pics
 import dashboard_fitness from '../assets/Dashboard_fitness.png';
 import heart from '../assets/heart-rate.png';
@@ -49,6 +50,8 @@ const Profile = () => {
   const [date, setDate] = useState("Day"); {/* For displaying Weekly, Monthly graph */ }
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
   const [option, setOption] = useState("Heart Rate");
+
+  const [eventView, setEventView] = useState(false);
 
   // **************** To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 **************** //
   const formatDate = (date) => {
@@ -94,7 +97,7 @@ const Profile = () => {
     // If user is uploading image second time then we need to first remove his previous image.
     // Because length of updatedProf array becomes 2 when he re-uploads image.
     if (updatedProf.length >= 2) {
-      console.log("Done");
+      // console.log("Done");
       updatedProf.shift();
     }
     setProf(updatedProf);
@@ -265,8 +268,10 @@ const Profile = () => {
       </div>
 
       {/* Schedule Part */}
-      <div className="absolute flex flex-col lg:top-[325px] lg:ml-[1030px] border border-none">
+      <div className="absolute flex flex-row lg:space-x-[15px] lg:top-[325px] lg:ml-[1030px] border border-none">
         <p className="font-bold dashboard_schedule">Scheduled</p>
+        <AddCircleIcon className="left-0 cursor-pointer border border-none text-black" sx={{ width: '20px', height: 'px'}} onClick={() => setEventView(true)} />
+        {eventView && <TestCalendar view={eventView} setView={setEventView} />}
       </div>
       <div className="absolute flex flex-col lg:top-[360px] lg:ml-[1035px] justify-between gap-y-2">
         {/* Apply map function to show all scheduled task from firebase */}
@@ -283,15 +288,18 @@ const Profile = () => {
 
       {/* ******************* When profile value is Dashboard i.e profile === "Dashboard" **************** */}
       {profile === "Dashboard" && <div className="absolute top-0 ml-[167px] lg:w-[850px] border border-l-0 border-y-0 border-[#CBD5E1]">
+        {/* Dashboard title */}
         <div className="absolute mt-4 ml-8 border border-none">
           <h1 className="text-[23px] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
         </div>
+
         {/* MUI DatePicker component part */}
         <LocalizationProvider dateAdapter={AdapterDayjs} >
           <div className="absolute flex flex-row right-0 mt-4 lg:mr-10 cursor-pointer border border-none" >
             <DatePicker
-              label=""
               value={value}
+              defaultValue={value}
+              disableFuture
               onChange={(newValue) => setValue(newValue)}
               format={formatDate(value)}
               sx={{
@@ -304,6 +312,7 @@ const Profile = () => {
             />
           </div>
         </LocalizationProvider>
+
         {/* Welcome to Fitness! part */}
         <div className="absolute flex mt-20 lg:ml-8 lg:w-[780px] lg:p-4 rounded-xl border">
           <img src={dashboard_fitness} className="lg:w-[370px] lg:h-[190px] rounded-xl" />
@@ -312,6 +321,7 @@ const Profile = () => {
             <p className="lg:ml-8 lg:mt-2"> Start Today, Feel Stronger Tomorrow.</p>
           </div>
         </div>
+
         {/* Trackers section */}
         {/* #A1C4FD -> #C2E9FB , br #91A6FF -> #FFFFFF */}
         {/*Heart rate :- bg-gradient-to-bl from-[#ff4f4f] to-[#ffb2b2]
@@ -329,6 +339,7 @@ const Profile = () => {
             </div>
           ))}
         </div>
+
         {/* User's trackers graph section */}
         <div className="absolute flex mt-[470px] lg:ml-8 pb-4 lg:w-[780px] lg:h-[380px] rounded-md border">
           <div className="mt-2 ml-[350px] justify-between space-x-3">
@@ -337,7 +348,8 @@ const Profile = () => {
             ))}
             <MoreVertIcon className="cursor-pointer" onClick={() => setOpen(!open)} />
           </div>
-          {/* For option teacker selection like Heart Rate*/}
+
+          {/* For option tracker selection like Heart Rate*/}
           {open && <div className="absolute mt-10 ml-[620px] w-[120px] px-3 py-1 flex flex-col bg-white z-20 items-start space-y-1 rounded-md border">
             <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
               setOption("Heart Rate");
@@ -352,13 +364,16 @@ const Profile = () => {
               setOpen(!open);
             }}>Sleep</p>
           </div>}
+
+          {/* For displaying tracker's graphs */}
           <div className="absolute flex items-center mt-12 lg:ml-5 w-[740px] h-[300px] rounded-xl border border-black">
             <p className="mx-auto text-[35px]">No Data Available</p>
           </div>
         </div>
-        <div className="flex mt-[890px] border-none"></div>
+        <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
       </div>}
       {/* ********************************************** */}
+      
     </>
   )
 }
