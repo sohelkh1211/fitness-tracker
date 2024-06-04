@@ -49,13 +49,13 @@ function App() {
       }}
       />
       <Routes>
-        {active && !user ? <Route path="/" element={<Preloader />} /> : <Route path="/" element={<Startup />} /> }
+        {active && !user ? <Route path="/" element={<Preloader />} /> : <Route path="/" element={<Startup />} />}
         <Route path='/register' element={<Register />} />
         <Route path='/login' element={<Provider><Login /></Provider>} /> {/* Provider is needed to access setUser callback function. */}
         {/* Due to react-router-dom v6, All the children of Routes nust be Route only.
         Hence, we can't directly put ProtectedRoute instead of Route. */}
         <Route element={<Provider><ProtectedRoute /></Provider>}> {/* Using provider to access global state variable "user, setUser" inside ProtectedRoute.*/}
-          <Route path='/home' element={<Startup1 />} />
+          <Route path='/home' element={<Provider><Startup1 /></Provider>} />
           <Route path="/user/profile" element={<Provider><Profile /></Provider>} />
         </Route>
         <Route path="/exercise" element={<Home />} />

@@ -5,7 +5,7 @@ import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
-import TestCalendar from "./TestCalendar";
+import EventForm from "./EventForm";
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -14,6 +14,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 // Calendar component MUI components import 
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
@@ -35,23 +36,27 @@ import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
 import { auth } from "../firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { ref as dbRef, update as databaseUpdate } from 'firebase/database';
+import { ref as dbRef, update as databaseUpdate, get, remove } from 'firebase/database';
 import { getDownloadURL, ref as storageRef, uploadBytes, deleteObject } from "firebase/storage";
 import { fetchUserData } from "../utils/fetchData";
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { profile, setProfile, setUser } = useContext(GlobalContext);
+  const { profile, setProfile, setUser, data, setData } = useContext(GlobalContext); // profile for sidebar, usetUser for logout, data for user's data such as name, image.
   // console.log("Profile component :- ",profile);
 
+  // **************** Dashboard top calendar **********************
   let currentDate = new Date().toDateString();
   const [value, setValue] = useState(dayjs(currentDate));
 
   const [date, setDate] = useState("Day"); {/* For displaying Weekly, Monthly graph */ }
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
   const [option, setOption] = useState("Heart Rate");
+  // *************************************************************
 
+  // ******************* To view EventForm **********************
   const [eventView, setEventView] = useState(false);
+  // ***********************************************************
 
   // **************** To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 **************** //
   const formatDate = (date) => {
@@ -60,18 +65,11 @@ const Profile = () => {
   };
   // **************************************************************************** //
 
+  // ****************** For Displaying User Events *******************
+  const [events, setEvents] = useState(false);
+  // *****************************************************************
+
   // ************* For user profile image ****************** //
-  const [data, setData] = useState({
-    first_name: '',
-    last_name: '',
-    email: '',
-    age: '',
-    gender: '',
-    dob: '',
-    height: '',
-    image: '',
-    weight: ''
-  });
   const [imagecrop, setImagecrop] = useState(false); {/* To display or hide dialogue box. */ }
   const [src, setSrc] = useState(false); {/* Required prop of Avatar */ }
   const [prof, setProf] = useState([]); {/* To store cropped image in the form of object i.e { preview : view } */ }
@@ -162,7 +160,7 @@ const Profile = () => {
 
   }
 
-  // ********************** Fetching data from firebase ************************* //
+  // ********************** Fetching and removing data from firebase ************************* //
   const [user_id, setUser_id] = useState(null);
   // onAuthStateChanged is required because auth changes frequently, it changes from null to the value of currentUser.
   // And we need user's unique ID to fetch his/her data from firebase.
@@ -180,13 +178,58 @@ const Profile = () => {
     return () => unsubscribe();
   }, []);
 
-  const fetchData = async (user_id) => {
-    const res1 = await fetchUserData(user_id);
-    setData({
-      ...res1
-    });
+  useEffect(() => {
+    // For Fetching user's basic Data
+    const fetchData = async (user_id) => {
+      const res1 = await fetchUserData(user_id);
+      setData({
+        ...res1
+      });
+    }
+
+    // For fetching user's event data
+    const fetchEvent = async (user_id) => {
+      const userRef = dbRef(db, `events/${user_id}`);
+      const snapshot = await get(userRef);
+      let event = snapshot.val();
+      event = Object.keys(event).map((key) => {
+        return { id: key, ...event[key] };
+      });
+      setEvents(event);
+    }
+
+    fetchData(user_id);
+    fetchEvent(user_id);
+  }, [user_id]);
+
+  // **** To dynamically update events state so that it should immediately appears on user's screen. ****
+  const addEvent = (newEvent) => {
+    // [...prevEvents, newEvent] uses the spread operator (...) to create a new array.
+    // ...prevEvents spreads the elements of the existing events array into the new array.
+    // newEvent is then added as the last element in the new array.
+    setEvents(prevEvents => [...prevEvents, newEvent]);
+  };
+
+  // ********* To delete event when user clicks on remove Icon button. ************
+  const handleEventDelete = async (eventID) => {
+    const eventRef = dbRef(db, `events/${user_id}/${eventID}`);
+    await remove(eventRef);
+    setEvents(event => event.id !== eventID);
+    // .filter(...): This is an array method that creates a new array with all elements that pass the test or condition implemented by the provided function.
+    // event => event.id !== eventId: This is the test function provided to filter. For each event in the events array:
+    // event.id: This is the ID of the current event being processed by the filter method.
+    // eventId: This is the ID of the event that we want to remove from the array.
+    // E.g :- Suppose, we wanna delete event 2
+    // const events = [
+    //   { id: '1', title: 'Event 1' },
+    //   { id: '2', title: 'Event 2' },
+    //   { id: '3', title: 'Event 3' }
+    // ];
+    // For the event with id: '1', the condition 1 !== 2 is true, so it is included in the new array.
+    // For the event with id: '2', the condition 2 !== 2 is false, so it is excluded from the new array.
+    // For the event with id: '3', the condition 3 !== 2 is true, so it is included in the new array.
   }
-  fetchData(user_id);
+  console.log(events);
   // ************************************************************* //
 
   return (
@@ -270,19 +313,20 @@ const Profile = () => {
       {/* Schedule Part */}
       <div className="absolute flex flex-row lg:space-x-[15px] lg:top-[325px] lg:ml-[1030px] border border-none">
         <p className="font-bold dashboard_schedule">Scheduled</p>
-        <AddCircleIcon className="left-0 cursor-pointer border border-none text-black" sx={{ width: '20px', height: 'px'}} onClick={() => setEventView(true)} />
-        {eventView && <TestCalendar view={eventView} setView={setEventView} />}
+        <AddCircleIcon className="left-0 cursor-pointer border border-none text-black" sx={{ width: '20px', height: 'px' }} onClick={() => setEventView(true)} />
+        {eventView && <EventForm addEvent={addEvent} view={eventView} setView={setEventView} />}
       </div>
       <div className="absolute flex flex-col lg:top-[360px] lg:ml-[1035px] justify-between gap-y-2">
         {/* Apply map function to show all scheduled task from firebase */}
-        <div className="flex flex-col lg:px-2.5 lg:py-1 rounded-md border border-black">
-          <div className="flex flex-row border w-[170px] justify-between border-none">
-            <p className="text-[14px] font-bold text-left">Yoga</p>
-            <MoreVertIcon className="cursor-pointer rotate-90" sx={{ width: '18px'}}  />
+        {events && events.map((ele) => (
+          <div key={ele.id} className="flex flex-col lg:px-2.5 lg:py-1 rounded-md border border-black">
+            <div className="flex flex-row border w-[170px] justify-between border-none">
+              <p className="text-[14px] font-bold text-left">{ele.title}</p>
+              <RemoveCircleOutlineIcon className="cursor-pointer" sx={{ width: '18px' }} onClick={() => { handleEventDelete(ele.id) }} />
+            </div>
+            <p className="text-[12px] -mt-0.5 text-left">{dayjs(ele.date).format("DD-MM-YYYY")} {ele.startTime}-{ele.endTime}</p>
           </div>
-          <p className="text-[12px] -mt-0.5 text-left">Today, 9 AM - 10 AM</p>
-        </div>
-        {/* **********************************************************   */}
+        ))}
       </div>
       {/* ********************************************** */}
 
@@ -373,7 +417,7 @@ const Profile = () => {
         <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
       </div>}
       {/* ********************************************** */}
-      
+
     </>
   )
 }

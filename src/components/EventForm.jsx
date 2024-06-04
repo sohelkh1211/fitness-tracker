@@ -14,9 +14,9 @@ import toast from 'react-hot-toast';
 import { Button } from 'primereact/button';
 // Firebase
 import { ref as dbRef, push } from 'firebase/database';
-import { db } from '../firebase';
+import { auth, db } from '../firebase';
 
-const TestCalendar = ({ view, setView }) => {
+const EventForm = ({ addEvent, view, setView }) => {
   let currentDate = new Date().toDateString();
   // const [show, setShow] = useState(true); // Set it to false later
   const [title, setTitle] = useState('');
@@ -28,15 +28,10 @@ const TestCalendar = ({ view, setView }) => {
   const [isStartOpen, setIsStartOpen] = useState(false);
   const [isEndOpen, setIsEndOpen] = useState(false);
 
-  console.log("View: ", view);
+  // console.log("View: ", view);
 
   const handleInputChange = (e) => {
     setTitle(e.target.value);
-  }
-
-  const formatDate = (date) => {
-    const options = { month: 'long', day: '2-digit', year: 'numeric' };
-    return new Intl.DateTimeFormat('en-US', options).format(date);
   }
 
   const handleSubmit = async (e) => {
@@ -46,11 +41,19 @@ const TestCalendar = ({ view, setView }) => {
       return
     }
 
-    const userRef = dbRef(db, 'events');
+    const user = auth.currentUser;
+    const userRef = dbRef(db, `events/${user.uid}`);
     const snapshot = await push(userRef, { title, date: date.toISOString(), startTime: startTime.format("HH:mm"), endTime: endTime.format("HH:mm") });
-
+    const newEvent = {
+      id: snapshot.key,
+      title,
+      date: date.toISOString(),
+      startTime: startTime.format("HH:mm"),
+      endTime: endTime.format("HH:mm")
+    };
+    addEvent(newEvent);
     setView(false);
-    toast.success("Event Created ✔️");
+    toast.success("Event Created 🗓️");
 
     setTitle('');
     setDate(dayjs(currentDate));
@@ -83,7 +86,6 @@ const TestCalendar = ({ view, setView }) => {
               <DatePicker
                 value={date}
                 defaultValue={date}
-                format={formatDate(date)}
                 onChange={(newValue) => setDate(newValue)}
                 sx={{
                   '& .MuiInputBase-input': {
@@ -176,4 +178,4 @@ const TestCalendar = ({ view, setView }) => {
   )
 }
 
-export default TestCalendar;
+export default EventForm;

@@ -32,6 +32,17 @@ export const useLocalStorage = (keyName, defaultValue) => {
 const Provider = ({ children }) => {
   const [profile, setProfile] = useState("Dashboard"); // For User Profile Side bar
   const [user, setUser] = useLocalStorage("user", null); // Whether user is loggedIn or not
+  const [data, setData] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    age: '',
+    gender: '',
+    dob: '',
+    height: '',
+    image: '',
+    weight: ''
+  });
 
   // console.log("Provider component :- ",profile);
   return (
@@ -40,6 +51,8 @@ const Provider = ({ children }) => {
       setProfile,
       user,
       setUser,
+      data,
+      setData
     }} >
       {children}
     </GlobalContext.Provider>
