@@ -4,6 +4,7 @@ import Login from "./Login";
 import Preloader from "./Preloader";
 import Startup1 from "./Startup1";
 import Profile from "./Profile";
+import UserProfile from "./UserProfile";
 
 export const user_profiles = [{
     name: "Dashboard",
@@ -52,4 +53,5 @@ export {
     Login,
     Preloader,
     Profile,
+    UserProfile,
 }

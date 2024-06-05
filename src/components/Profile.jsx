@@ -6,6 +6,8 @@ import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
 import EventForm from "./EventForm";
+import Provider from "../context/Provider";
+import UserProfile from "./UserProfile";
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -39,6 +41,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { ref as dbRef, update as databaseUpdate, get, remove } from 'firebase/database';
 import { getDownloadURL, ref as storageRef, uploadBytes, deleteObject } from "firebase/storage";
 import { fetchUserData } from "../utils/fetchData";
+
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -214,7 +217,8 @@ const Profile = () => {
   const handleEventDelete = async (eventID) => {
     const eventRef = dbRef(db, `events/${user_id}/${eventID}`);
     await remove(eventRef);
-    setEvents(event => event.id !== eventID);
+
+    setEvents(events.filter(event => event.id !== eventID));
     // .filter(...): This is an array method that creates a new array with all elements that pass the test or condition implemented by the provided function.
     // event => event.id !== eventId: This is the test function provided to filter. For each event in the events array:
     // event.id: This is the ID of the current event being processed by the filter method.
@@ -229,7 +233,8 @@ const Profile = () => {
     // For the event with id: '2', the condition 2 !== 2 is false, so it is excluded from the new array.
     // For the event with id: '3', the condition 3 !== 2 is true, so it is included in the new array.
   }
-  console.log(events);
+  // console.log(events);
+  console.log("Profile: ", data);
   // ************************************************************* //
 
   return (
@@ -291,7 +296,7 @@ const Profile = () => {
             </div>
           </div>
         </Dialog>
-        <a className="lg:text-[13px] lg:mt-2 cursor-pointer text-cyan-600" href="/user/profile">Edit health details</a>
+        <a className="lg:text-[13px] lg:mt-2 cursor-pointer text-cyan-600" onClick={() => setProfile("Profile")}>Edit health details</a>
       </div>
 
       {/* Displaying user's weight, height and age */}
@@ -417,6 +422,12 @@ const Profile = () => {
         <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
       </div>}
       {/* ********************************************** */}
+
+      {profile === "Profile" &&
+        <Provider>
+          <UserProfile data={data} setData={setData} />
+        </Provider>
+      }
 
     </>
   )
