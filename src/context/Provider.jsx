@@ -41,7 +41,9 @@ const Provider = ({ children }) => {
     dob: '',
     height: '',
     image: '',
-    weight: ''
+    weight: '',
+    sleep: '',
+    water: '1',
   });
 
   // console.log("Provider component :- ",profile);
