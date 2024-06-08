@@ -85,6 +85,43 @@ body {
   font-family: "Lora", serif;
 }
 
+.p-inputnumber {
+  margin-top: 5px;
+  border-radius: 4px;
+}
+
+.p-inputnumber-input {
+  border: 1px solid black;
+  width: 270px;
+  border-right: 0;
+  padding-left: 8px;
+  box-shadow: none;
+}
+
+.p-inputnumber-button {
+  background-color: #fff;
+  border: 1px solid black;
+  border-radius: 0;
+  width: 30px;
+  height: 15px;
+  background-color: #34D399;
+}
+
+.p-inputnumber-button:hover {
+  background-color: #f0f0f0;
+}
+
+.p-inputnumber-button-up {
+  border-top-right-radius: 4px;
+  /* border-top-left-radius: 4px; */
+}
+
+.p-inputnumber-button-down {
+  border-bottom-right-radius: 4px;
+  /* border-bottom-left-radius: 4px; */
+}
+
+
 /* ----------------------------------------------------- */
 /*Menu bar styling*/
 

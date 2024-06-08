@@ -43,7 +43,7 @@ const Provider = ({ children }) => {
     image: '',
     weight: '',
     sleep: '',
-    water: '1',
+    water_intake: '1',
   });
 
   // console.log("Provider component :- ",profile);

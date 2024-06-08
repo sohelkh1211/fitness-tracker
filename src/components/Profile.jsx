@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
 import EventForm from "./EventForm";
-import Provider from "../context/Provider";
 import UserProfile from "./UserProfile";
 // Importing profile icons
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -379,12 +378,16 @@ const Profile = () => {
         {/* tr #D3D3D3 -> #FF6B6B, #FF7878 -> #FFFFFF */}
         <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
           {dashboard_card.map((card, index) => (
-            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Heart Rate" ? 'bg-heart bg-cover' : 'bg-calories bg-cover'}  border border-black`}>
+            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Heart Rate" ? 'bg-heart bg-cover' : 'bg-calories bg-cover'}  border border-black`} onClick={() => {
+              if (card.name === "Sleep") {
+                setProfile("Profile");
+              }
+            }}>
               <div className="flex flex-row justify-between gap-x-6">
                 <p className={`text-left dashboard font-bold`}>{card.name}</p>
                 <img src={`${card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard ">--- {card.measure}</p>
+              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep ? data.sleep : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>
@@ -424,9 +427,7 @@ const Profile = () => {
       {/* ********************************************** */}
 
       {profile === "Profile" &&
-        <Provider>
-          <UserProfile data={data} setData={setData} />
-        </Provider>
+        <UserProfile data={data} setData={setData} />
       }
 
     </>
