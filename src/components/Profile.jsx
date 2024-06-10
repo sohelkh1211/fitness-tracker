@@ -46,7 +46,7 @@ const Profile = () => {
   const navigate = useNavigate();
   const { profile, setProfile, setUser, data, setData } = useContext(GlobalContext); // profile for sidebar, usetUser for logout, data for user's data such as name, image.
   // console.log("Profile component :- ",profile);
-
+  
   // **************** Dashboard top calendar **********************
   let currentDate = new Date().toDateString();
   const [value, setValue] = useState(dayjs(currentDate));
@@ -57,7 +57,7 @@ const Profile = () => {
   // *************************************************************
 
   // ******************* To view EventForm **********************
-  const [eventView, setEventView] = useState(false);
+  const [eventView, setEventView] = useState([]);
   // ***********************************************************
 
   // **************** To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 **************** //
@@ -93,7 +93,7 @@ const Profile = () => {
   // Store { preview : view } to the prof array. Also, set imagecrop to false because we need to close the dialogue box.
   const savecropImage = async () => {
     let updatedProf = [...prof, { preview }];
-    console.log("Updated prof :- ", updatedProf);
+    // console.log("Updated prof :- ", updatedProf);
     // If user is uploading image second time then we need to first remove his previous image.
     // Because length of updatedProf array becomes 2 when he re-uploads image.
     if (updatedProf.length >= 2) {
@@ -185,6 +185,7 @@ const Profile = () => {
     const fetchData = async (user_id) => {
       const res1 = await fetchUserData(user_id);
       setData({
+        ...data,
         ...res1
       });
     }
@@ -194,22 +195,29 @@ const Profile = () => {
       const userRef = dbRef(db, `events/${user_id}`);
       const snapshot = await get(userRef);
       let event = snapshot.val();
-      event = Object.keys(event).map((key) => {
-        return { id: key, ...event[key] };
-      });
+      if(event) {
+        event = Object.keys(event).map((key) => {
+          return { id: key, ...event[key] };
+        });
+      }
       setEvents(event);
     }
 
     fetchData(user_id);
     fetchEvent(user_id);
-  }, [user_id]);
+  }, [user_id,data]); // Run useEffect whenever there is change in user_id { when user logs in } and data changes { user update some data }.
 
   // **** To dynamically update events state so that it should immediately appears on user's screen. ****
   const addEvent = (newEvent) => {
     // [...prevEvents, newEvent] uses the spread operator (...) to create a new array.
     // ...prevEvents spreads the elements of the existing events array into the new array.
     // newEvent is then added as the last element in the new array.
-    setEvents(prevEvents => [...prevEvents, newEvent]);
+    setEvents(prevEvents => {
+      if (!Array.isArray(prevEvents)) {
+        prevEvents = [];
+      }
+      return [...prevEvents, newEvent];
+    });
   };
 
   // ********* To delete event when user clicks on remove Icon button. ************
@@ -233,7 +241,7 @@ const Profile = () => {
     // For the event with id: '3', the condition 3 !== 2 is true, so it is included in the new array.
   }
   // console.log(events);
-  console.log("Profile: ", data);
+  // console.log("Profile: ", data);
   // ************************************************************* //
 
   return (
@@ -387,7 +395,7 @@ const Profile = () => {
                 <p className={`text-left dashboard font-bold`}>{card.name}</p>
                 <img src={`${card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep ? data.sleep : "---"}  {card.measure}</p>
+              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>

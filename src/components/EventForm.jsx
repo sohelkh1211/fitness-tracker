@@ -124,14 +124,16 @@ const EventForm = ({ addEvent, view, setView }) => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <AccessTimeIcon onClick={() => setIsStartOpen(!isStartOpen)} className='cursor-pointer' />
+                        <AccessTimeIcon onClick={() => {setIsStartOpen(!isStartOpen); setIsEndOpen(false);}} className='cursor-pointer' />
                       </InputAdornment>
                     ),
                   }} />
                 {isStartOpen ? <TimeClock sx={{
-                  position: 'absolute', display: 'flex', marginLeft: '55px', top: '300px',
+                  position: 'absolute', display: 'flex', marginLeft: '110px', top: '20px', zIndex: 20,
                   '& .MuiClock-root': {
                     backgroundColor: '#ffffff', // Clock face background color
+                    width: '200px',
+                    height: '200px'
                   },
                 }} ampm={false} views={['hours', 'minutes']} onChange={(newValue) => setStartTime(newValue)} /> : ''}
               </div>
@@ -150,14 +152,16 @@ const EventForm = ({ addEvent, view, setView }) => {
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
-                        <AccessTimeIcon onClick={() => setIsEndOpen(!isEndOpen)} className=' cursor-pointer' />
+                        <AccessTimeIcon onClick={() => {setIsEndOpen(!isEndOpen); setIsStartOpen(false);}} className=' cursor-pointer' />
                       </InputAdornment>
                     ),
                   }} />
                 {isEndOpen ? <TimeClock sx={{
-                  position: 'absolute', display: 'flex', marginRight: '105px', right: 0, top: '300px',
+                  position: 'absolute', display: 'flex', marginRight: '80px', right: 0, top: '20px',
                   '& .MuiClock-root': {
                     backgroundColor: '#ffffff', // Clock face background color
+                    width: '200px',
+                    height: '200px',
                   },
                 }} ampm={false} views={['hours', 'minutes']} onChange={(newValue) => setEndTime(newValue)} /> : ''}
               </div>

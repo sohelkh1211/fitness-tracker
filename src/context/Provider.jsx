@@ -32,6 +32,10 @@ export const useLocalStorage = (keyName, defaultValue) => {
 const Provider = ({ children }) => {
   const [profile, setProfile] = useState("Dashboard"); // For User Profile Side bar
   const [user, setUser] = useLocalStorage("user", null); // Whether user is loggedIn or not
+
+  let currentDate = new Date().toDateString();
+  currentDate = dayjs(currentDate).format("DD-MM-YYYY");
+  
   const [data, setData] = useState({
     first_name: '',
     last_name: '',
@@ -42,7 +46,9 @@ const Provider = ({ children }) => {
     height: '',
     image: '',
     weight: '',
-    sleep: '',
+    sleep: {
+      [currentDate] : ''
+    },
     water_intake: '1',
   });
 
