@@ -49,7 +49,9 @@ const Provider = ({ children }) => {
     sleep: {
       [currentDate] : ''
     },
-    water_intake: '1',
+    water_intake: {
+      [currentDate]: '1'
+    },
   });
 
   // console.log("Provider component :- ",profile);

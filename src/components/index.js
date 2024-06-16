@@ -34,7 +34,7 @@ export const dashboard_card = [{
 },];
 
 export const tracker_graph = [{
-    name: "Day",
+    name: "Daily",
 },
 {
     name: "Weekly",
@@ -42,9 +42,7 @@ export const tracker_graph = [{
 {
     name: "Monthly",
 },
-{
-    name: "Yearly"
-}]
+]
 
 export {
     Startup,

@@ -15,7 +15,7 @@ const Startup1 = () => {
     const [isscroll, setIsscroll] = useState(false); // To style navbar bottom border green -> on scroll 
 
     const { data } = useContext(GlobalContext);
-    console.log(data.image);
+    // console.log(data.image);
     useEffect(() =>{
         const handleScroll = () => {
             if(window.scrollY > 200){

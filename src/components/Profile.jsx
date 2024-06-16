@@ -32,6 +32,10 @@ import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
 import 'primeicons/primeicons.css';
 import Avatar from 'react-avatar-edit'; {/* To upload and crop the image. */ }
+// Chart imports
+import Chart from "chart.js/auto";
+import { CategoryScale } from "chart.js";
+import { Line } from "react-chartjs-2";
 // Sending user image to firebase
 import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
@@ -46,18 +50,18 @@ const Profile = () => {
   const navigate = useNavigate();
   const { profile, setProfile, setUser, data, setData } = useContext(GlobalContext); // profile for sidebar, usetUser for logout, data for user's data such as name, image.
   // console.log("Profile component :- ",profile);
-  
+
   // **************** Dashboard top calendar **********************
   let currentDate = new Date().toDateString();
   const [value, setValue] = useState(dayjs(currentDate));
 
-  const [date, setDate] = useState("Day"); {/* For displaying Weekly, Monthly graph */ }
+  const [period, setPeriod] = useState("Daily"); {/* For displaying Weekly, Monthly graph */ }
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
-  const [option, setOption] = useState("Heart Rate");
+  const [option, setOption] = useState("Sleep");
   // *************************************************************
 
   // ******************* To view EventForm **********************
-  const [eventView, setEventView] = useState([]);
+  const [eventView, setEventView] = useState(false);
   // ***********************************************************
 
   // **************** To formate date as :- MonthName DD, YYYY. E.g :- May 09, 2024 **************** //
@@ -68,7 +72,7 @@ const Profile = () => {
   // **************************************************************************** //
 
   // ****************** For Displaying User Events *******************
-  const [events, setEvents] = useState(false);
+  const [events, setEvents] = useState([]);
   // *****************************************************************
 
   // ************* For user profile image ****************** //
@@ -195,7 +199,7 @@ const Profile = () => {
       const userRef = dbRef(db, `events/${user_id}`);
       const snapshot = await get(userRef);
       let event = snapshot.val();
-      if(event) {
+      if (event) {
         event = Object.keys(event).map((key) => {
           return { id: key, ...event[key] };
         });
@@ -205,7 +209,7 @@ const Profile = () => {
 
     fetchData(user_id);
     fetchEvent(user_id);
-  }, [user_id,data]); // Run useEffect whenever there is change in user_id { when user logs in } and data changes { user update some data }.
+  }, [user_id, data]); // Run useEffect whenever there is change in user_id { when user logs in } and data changes { user update some data }.
 
   // **** To dynamically update events state so that it should immediately appears on user's screen. ****
   const addEvent = (newEvent) => {
@@ -243,6 +247,60 @@ const Profile = () => {
   // console.log(events);
   // console.log("Profile: ", data);
   // ************************************************************* //
+
+  //  ***************** For displaying charts or graphs **************
+  Chart.register(CategoryScale);
+
+  const convertTimeToHours = (time) => {
+    if (time === "") {
+      return ""
+    }
+    const [hours, minutes] = time.split(":").map(Number); // Convert time string i.e "08:00" to ["08","00"] to numbers that are hours: 08 , minutes: 00
+    return (hours + minutes / 60).toFixed(2);
+  };
+
+  const [chartData, setChartData] = useState({
+    labels: [],
+    datasets: [
+      {
+        label: option === "Sleep" ? "Sleep hours" : '',
+        data: [],
+        backgroundColor: "#50AF95",
+        borderColor: "black",
+        borderWidth: 2
+      }
+    ]
+  });
+
+  useEffect(() => {
+    // Object.entries(data.sleep) returns [['14-06-2024', '07:20'], ['15-06-2024', '06:45']] Array of arrays.
+    var sleepData = Object.entries(data.sleep).map(([date, time]) => ({
+      date,
+      hours: convertTimeToHours(time)
+    }));
+
+    if (sleepData.length >= 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
+      sleepData = sleepData.slice(-7)
+    }
+
+    // if(sleepData.length > 7 && period === "Monthly") {
+
+    // }
+
+    setChartData({
+      labels: option === "Sleep" ? sleepData.map(item => item.date) : [],
+      datasets: [
+        {
+          ...chartData.datasets[0],
+          data: option === "Sleep" ? sleepData.map(item => item.hours) : [],
+        }
+      ]
+    });
+
+  }, [data, user_id, option]); // useEffect Runs whenever there is change in data, user_id [ when user logs in ] and changes options i.e to sleep, water_intake etc.
+
+  // *****************************************************************
+
 
   return (
     <>
@@ -395,16 +453,16 @@ const Profile = () => {
                 <p className={`text-left dashboard font-bold`}>{card.name}</p>
                 <img src={`${card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
+              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>
 
         {/* User's trackers graph section */}
         <div className="absolute flex mt-[470px] lg:ml-8 pb-4 lg:w-[780px] lg:h-[380px] rounded-md border">
-          <div className="mt-2 ml-[350px] justify-between space-x-3">
+          <div className="mt-2 ml-[440px] h-fit justify-between space-x-3">
             {tracker_graph.map((tracker, index) => (
-              <button key={index} className={`dashboard text-[14px] font-bold ${date === tracker.name ? 'bg-purple-600' : 'bg-purple-100'} border py-0.5 px-5`} onClick={() => setDate(tracker.name)}>{tracker.name}</button>
+              <button key={index} className={`dashboard text-[14px] font-bold ${period === tracker.name ? 'bg-purple-600' : 'bg-purple-100'} border py-0.5 px-5`} onClick={() => setPeriod(tracker.name)}>{tracker.name}</button>
             ))}
             <MoreVertIcon className="cursor-pointer" onClick={() => setOpen(!open)} />
           </div>
@@ -427,7 +485,27 @@ const Profile = () => {
 
           {/* For displaying tracker's graphs */}
           <div className="absolute flex items-center mt-12 lg:ml-5 w-[740px] h-[300px] rounded-xl border border-black">
-            <p className="mx-auto text-[35px]">No Data Available</p>
+            {option === "Sleep" ? (
+              period === "Daily" ?
+                <Line
+                  className="mx-auto"
+                  style={{ width: 800 }}
+                  data={chartData}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: "Sleep tracking hours"
+                      },
+                      legend: {
+                        display: false
+                      }
+                    }
+                  }}
+                /> : <></>
+            ) : option === "Calories Burnt" ? (
+              <p className="mx-auto text-[35px]">No Data Available</p>
+            ) : null}
           </div>
         </div>
         <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
