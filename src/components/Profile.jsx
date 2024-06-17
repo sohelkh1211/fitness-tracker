@@ -36,6 +36,7 @@ import Avatar from 'react-avatar-edit'; {/* To upload and crop the image. */ }
 import Chart from "chart.js/auto";
 import { CategoryScale } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { Bar } from "react-chartjs-2";
 // Sending user image to firebase
 import { v4 as uuid } from 'uuid';
 import { db, storage } from "../firebase";
@@ -258,7 +259,7 @@ const Profile = () => {
     const [hours, minutes] = time.split(":").map(Number); // Convert time string i.e "08:00" to ["08","00"] to numbers that are hours: 08 , minutes: 00
     return (hours + minutes / 60).toFixed(2);
   };
-
+  
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
@@ -277,22 +278,70 @@ const Profile = () => {
     var sleepData = Object.entries(data.sleep).map(([date, time]) => ({
       date,
       hours: convertTimeToHours(time)
-    }));
+    })); // returns array of objects [ { date: '01-06-2024', hours: '6.50' }, { date: '02-06-2024', hours: '7.33' }, { date: '03-06-2024', hours: '7.20' }, ... ]
 
-    if (sleepData.length >= 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
-      sleepData = sleepData.slice(-7)
+    if (sleepData.length >= 7 || sleepData.length < 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
+      let temp = sleepData.map((item) => ({
+        ...item,
+        date: new Date(item.date.split("-").reverse().join("-"))
+      }));
+      temp.sort((a,b) => a.date - b.date);
+      temp = temp.map((item) => ({
+        ...item,
+        date: `${String(item.date.getDate()).padStart(2,'0')}-${String(item.date.getMonth()+1).padStart(2,'0')}-${String(item.date.getFullYear())}`
+      }));
+      var sleepDailyData = temp.slice(-7)
     }
 
-    // if(sleepData.length > 7 && period === "Monthly") {
+    if (sleepData.length > 7 && period === "Weekly") {
+      var weekSleepData = sleepData
+        .map(item => ({
+          ...item,
+          date: new Date(item.date.split("-").reverse().join("-"))
+        }))
+        .sort((a, b) => b.date - a.date); // E.g :- Look at UserProfile.jsx
+      // [ {date: Mon Jun 17 2024 05:30:00 GMT+0530 (India Standard Time), hours: '6.25'},{date: Sun Jun 16 2024 05:30:00 GMT+0530 (India Standard Time), hours: '6.50'},{date: Sat Jun 15 2024 05:30:00 GMT+0530 (India Standard Time), hours: '7.00'}, ..............]
+      let weekCount = 1;
+      let currentWeek = []; // Stack to push current week dates. E.g :- Starting from 17-06-2024 to 11-06-2024 
+      const results = {}; // Desired output that we want. results = { week1: '', week2: '', week3: '' }
 
-    // }
+      for (let i = 0; i < weekSleepData.length; i++) {
+        currentWeek.push(weekSleepData[i]);
+        if (currentWeek.length === 7 || i === weekSleepData.length - 1) {
+          const weekKey = `week${weekCount}`;
+          const totalHours = currentWeek.reduce((sum, item) => sum + parseFloat(item.hours), 0); // Calculates total sum of 7 days sleep hours
+          const averageHours = totalHours / currentWeek.length;
+          results[weekKey] = averageHours.toFixed(2);
+          weekCount++;
+          currentWeek = [];
+        }
+      }
+
+      // results = { week1: '7.12', week2: '7.36', week3: '7.01' } // ordered from most recent to oldest.
+
+      // Keep only the most recent 4 weeks.
+      const recentWeeks = Object.keys(results).slice(-4);
+      // To rename weeks in the order from oldest to most recent [ means oldest: 0 to most recent: n]
+      const finalResults = {};
+
+      recentWeeks.forEach((week, index) => { // rename keys :- finalResults = { week3: '7.12', week2: '7.36', week1: '7.01' }
+        finalResults[`week${recentWeeks.length - index}`] = results[week];
+      });
+
+      var finalWalaResult = {};
+      // Now reverse object :- finalResults = { week1: '7.01', week2: '7.36', week3: '7.12' }
+      const finalRecentWeeks = Object.keys(finalResults).reverse(); // [ week1, week2, week3 ]
+      finalRecentWeeks.forEach((week, index) => {
+        finalWalaResult[week] = finalResults[week];
+      });
+    }
 
     setChartData({
-      labels: option === "Sleep" ? sleepData.map(item => item.date) : [],
+      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : [],
       datasets: [
         {
           ...chartData.datasets[0],
-          data: option === "Sleep" ? sleepData.map(item => item.hours) : [],
+          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : [],
         }
       ]
     });
@@ -488,21 +537,24 @@ const Profile = () => {
             {option === "Sleep" ? (
               period === "Daily" ?
                 <Line
-                  className="mx-auto"
+                  className="mx-auto cursor-pointer"
                   style={{ width: 800 }}
                   data={chartData}
                   options={{
                     plugins: {
                       title: {
                         display: true,
-                        text: "Sleep tracking hours"
+                        text: "Daily Sleep Hours"
                       },
                       legend: {
                         display: false
                       }
                     }
                   }}
-                /> : <></>
+                /> :
+                period === "Weekly" && Object.keys(data.sleep).length > 7 ?
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Sleep Hours" }, legend: { display: false } } }} />
+                  : <p className="mx-auto text-[35px]">No Data Available</p>
             ) : option === "Calories Burnt" ? (
               <p className="mx-auto text-[35px]">No Data Available</p>
             ) : null}

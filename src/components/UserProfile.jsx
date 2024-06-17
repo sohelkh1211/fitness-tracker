@@ -63,7 +63,6 @@ const UserProfile = ({ data, setData }) => {
         return formattedDate;
     }
 
-    // console.log(getMosRecentDate(localData.sleep) !== currentDate);
     useEffect(() => {
         const updateSleepHours = () => {
             const mostRecentDate = getMosRecentDate(localData.sleep);
@@ -82,6 +81,32 @@ const UserProfile = ({ data, setData }) => {
         const updateDatabse = async () => {
             const userRef = dbRef(db, `UserData/${auth.currentUser.uid}`);
             updateSleepHours();
+            await dbUpdate(userRef, localData);
+        }
+
+        updateDatabse();
+
+    }, []);
+
+    useEffect(() => {
+        const updateWaterIntake = () => {
+            const mostRecentDate = getMosRecentDate(localData.water_intake);
+            if (currentDate !== mostRecentDate) {
+                setLocalData({
+                    ...localData,
+                    water_intake: {
+                        ...localData.water_intake,
+                        [currentDate]: 1
+                    }
+                })
+                setData(localData);
+            }
+        }
+
+        const updateDatabse = async () => {
+            const userRef = dbRef(db, `UserData/${auth.currentUser.uid}`);
+            updateWaterIntake();
+            console.log(localData);
             await dbUpdate(userRef, localData);
         }
 
