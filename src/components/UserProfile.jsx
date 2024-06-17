@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { InputNumber } from 'primereact/inputnumber';
 import 'primereact/resources/primereact.min.css';
@@ -50,6 +50,46 @@ const UserProfile = ({ data, setData }) => {
             [name]: value
         })
     }
+
+    const getMosRecentDate = (dataObject) => {
+        // converts ["12-06-2024", "13-06-2024"] to ["2024-06-12","2024-06-13"] then [Wed Jun 12 2024, Thu Jun 13 2024]
+        const dates = Object.keys(dataObject).map(date => new Date(date.split("-").reverse().join("-")));
+        // Sorts date in descending order [Thu Jun 13 2024, Wed Jun 12 2024]
+        dates.sort((a, b) => b - a);
+        // Thu Jun 13 2024
+        const mostRecentDate = dates[0];
+        // Converts date back to original format "13-06-2024"
+        const formattedDate = `${String(mostRecentDate.getDate()).padStart(2, '0')}-${String(mostRecentDate.getMonth() + 1).padStart(2, '0')}-${String(mostRecentDate.getFullYear())}`;
+        return formattedDate;
+    }
+
+    // console.log(getMosRecentDate(localData.sleep) !== currentDate);
+    useEffect(() => {
+        const updateSleepHours = () => {
+            const mostRecentDate = getMosRecentDate(localData.sleep);
+            if (currentDate !== mostRecentDate) {
+                setLocalData({
+                    ...localData,
+                    sleep: {
+                        ...localData.sleep,
+                        [currentDate]: ''
+                    }
+                })
+                setData(localData);
+            }
+        }
+
+        const updateDatabse = async () => {
+            const userRef = dbRef(db, `UserData/${auth.currentUser.uid}`);
+            updateSleepHours();
+            await dbUpdate(userRef, localData);
+        }
+
+        updateDatabse();
+
+    }, []);
+
+    
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -107,11 +147,11 @@ const UserProfile = ({ data, setData }) => {
                     </div>
                     <div className="absolute lg:mt-[240px] lg:ml-4">
                         <p className="text-left">Sleep Hours</p>
-                        <input disabled={!change} type="time" name="sleep" placeholder="Sleep hours" value={localData.sleep[currentDate]} onChange={trackerChange} onKeyDown={(e) => { if (e.key == ' ') e.preventDefault() }} className="right-0 lg:mt-1 lg:px-2 lg:py-0.5 lg:w-[300px] rounded-md border border-black outline-none focus:border-emerald-300" />
+                        <input disabled={!change} type="time" name="sleep" placeholder="Sleep hours" value={localData.sleep[currentDate] || ''} onChange={trackerChange} onKeyDown={(e) => { if (e.key == ' ') e.preventDefault() }} className="right-0 lg:mt-1 lg:px-2 lg:py-0.5 lg:w-[300px] rounded-md border border-black outline-none focus:border-emerald-300" />
                     </div>
                     <div className="absolute lg:mt-[240px] lg:ml-[428px]">
                         <p className="text-left">Water Intake Limit</p>
-                        <InputNumber disabled={!change} name='water_intake' onValueChange={trackerChange} value={localData.water_intake[currentDate]} mode="decimal" showButtons min={1} max={15} />
+                        <InputNumber disabled={!change} name='water_intake' onValueChange={trackerChange} value={localData.water_intake[currentDate] || ''} mode="decimal" showButtons min={1} max={15} />
                     </div>
                 </div>
                 {change &&
