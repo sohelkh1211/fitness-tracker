@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { InputNumber } from 'primereact/inputnumber';
 import 'primereact/resources/primereact.min.css';
@@ -9,10 +9,12 @@ import dayjs from 'dayjs';
 // ******************** Firebase ***********************
 import { db, auth } from '../firebase';
 import { ref as dbRef, update as dbUpdate } from 'firebase/database';
+import { GlobalContext } from '../context/Provider';
 
 const UserProfile = ({ data, setData }) => {
     const [change, setChange] = useState(false); // To enable or disaable form inputs.
     const [localData, setLocalData] = useState(data); // Needed to reflect changes made only to profile but not to dashboard simultaneously.
+    const { profile } = useContext(GlobalContext);
 
     let currentDate = new Date().toDateString();
     currentDate = dayjs(currentDate).format("DD-MM-YYYY");
@@ -86,7 +88,7 @@ const UserProfile = ({ data, setData }) => {
 
         updateDatabse();
 
-    }, []);
+    }, [data]);
 
     useEffect(() => {
         const updateWaterIntake = () => {
@@ -106,13 +108,12 @@ const UserProfile = ({ data, setData }) => {
         const updateDatabse = async () => {
             const userRef = dbRef(db, `UserData/${auth.currentUser.uid}`);
             updateWaterIntake();
-            console.log(localData);
             await dbUpdate(userRef, localData);
         }
 
         updateDatabse();
 
-    }, []);
+    }, [data]);
 
     
 

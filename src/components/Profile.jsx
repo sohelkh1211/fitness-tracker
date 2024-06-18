@@ -3,7 +3,7 @@ import { dashboard_card } from ".";
 import { tracker_graph } from ".";
 import { useState, useContext, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GlobalContext } from "../context/Provider";
+import Provider, { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
 import EventForm from "./EventForm";
 import UserProfile from "./UserProfile";
@@ -259,14 +259,14 @@ const Profile = () => {
     const [hours, minutes] = time.split(":").map(Number); // Convert time string i.e "08:00" to ["08","00"] to numbers that are hours: 08 , minutes: 00
     return (hours + minutes / 60).toFixed(2);
   };
-  
+
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
       {
         label: option === "Sleep" ? "Sleep hours" : '',
         data: [],
-        backgroundColor: "#50AF95",
+        backgroundColor: "#22D3EE", // #50AF95
         borderColor: "black",
         borderWidth: 2
       }
@@ -280,20 +280,20 @@ const Profile = () => {
       hours: convertTimeToHours(time)
     })); // returns array of objects [ { date: '01-06-2024', hours: '6.50' }, { date: '02-06-2024', hours: '7.33' }, { date: '03-06-2024', hours: '7.20' }, ... ]
 
-    if (sleepData.length >= 7 || sleepData.length < 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
+    if (option === "Sleep" && sleepData.length >= 7 || sleepData.length < 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
       let temp = sleepData.map((item) => ({
         ...item,
         date: new Date(item.date.split("-").reverse().join("-"))
       }));
-      temp.sort((a,b) => a.date - b.date);
+      temp.sort((a, b) => a.date - b.date);
       temp = temp.map((item) => ({
         ...item,
-        date: `${String(item.date.getDate()).padStart(2,'0')}-${String(item.date.getMonth()+1).padStart(2,'0')}-${String(item.date.getFullYear())}`
+        date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
       }));
       var sleepDailyData = temp.slice(-7)
     }
 
-    if (sleepData.length > 7 && period === "Weekly") {
+    if (option === "Sleep" && sleepData.length > 7 && period === "Weekly") {
       var weekSleepData = sleepData
         .map(item => ({
           ...item,
@@ -321,7 +321,7 @@ const Profile = () => {
 
       // Keep only the most recent 4 weeks.
       const recentWeeks = Object.keys(results).slice(-4);
-      // To rename weeks in the order from oldest to most recent [ means oldest: 0 to most recent: n]
+      // To rename weeks in the order from oldest to most recent [ means oldest: n to most recent: 0]
       const finalResults = {};
 
       recentWeeks.forEach((week, index) => { // rename keys :- finalResults = { week3: '7.12', week2: '7.36', week1: '7.01' }
@@ -329,19 +329,52 @@ const Profile = () => {
       });
 
       var finalWalaResult = {};
-      // Now reverse object :- finalResults = { week1: '7.01', week2: '7.36', week3: '7.12' }
+      // Now reverse object :- finalWalaResults = { week1: '7.01', week2: '7.36', week3: '7.12' }
       const finalRecentWeeks = Object.keys(finalResults).reverse(); // [ week1, week2, week3 ]
       finalRecentWeeks.forEach((week, index) => {
         finalWalaResult[week] = finalResults[week];
       });
     }
 
+    if (option === "Sleep" && period === "Monthly") {
+      let temp = sleepData.map((item) => ({
+        ...item,
+        date: new Date(item.date.split("-").reverse().join("-"))
+      }));
+      temp.sort((a, b) => a.date - b.date);
+      temp = temp.slice(-123);
+      // console.log(temp);
+      var monthNames = [(temp[0].date).toLocaleString('default', { month: 'long' })];
+      var currentMonthHours = [];
+      var results = [];
+
+      for (let i = 0; i < temp.length; i++) {
+        if (monthNames.slice(-1) == (temp[i].date).toLocaleString('default', { month: 'long' }) && i !== temp.length - 1) {
+          currentMonthHours.push(temp[i].hours);
+        }
+        else {
+          if (i !== temp.length - 1) {
+            monthNames.push((temp[i].date).toLocaleString('default', { month: 'long' }));
+          }
+          else {
+            currentMonthHours.push(temp[i].hours);
+          }
+          const totalMonthHours = currentMonthHours.reduce((sum, item) => sum + parseFloat(item), 0);
+          const avgMonthHours = totalMonthHours / currentMonthHours.length;
+          results.push(avgMonthHours.toFixed(2));
+          currentMonthHours = [temp[i].hours];
+        }
+      }
+      // console.log(monthNames);
+      // console.log(results);
+    }
+
     setChartData({
-      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : [],
+      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : [],
       datasets: [
         {
           ...chartData.datasets[0],
-          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : [],
+          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : [],
         }
       ]
     });
@@ -552,9 +585,14 @@ const Profile = () => {
                     }
                   }}
                 /> :
-                period === "Weekly" && Object.keys(data.sleep).length > 7 ?
-                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Sleep Hours" }, legend: { display: false } } }} />
-                  : <p className="mx-auto text-[35px]">No Data Available</p>
+                period === "Weekly" ? (
+                  Object.keys(data.sleep).length > 7 ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Sleep Hours" }, legend: { display: false } } }} />
+                    :
+                    <p className="mx-auto text-[35px]">No Data Available</p>) :
+                  period === "Monthly" ? (
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Sleep Hours" }, legend: { display: false } } }} />
+                  ) : null
             ) : option === "Calories Burnt" ? (
               <p className="mx-auto text-[35px]">No Data Available</p>
             ) : null}
@@ -565,7 +603,9 @@ const Profile = () => {
       {/* ********************************************** */}
 
       {profile === "Profile" &&
-        <UserProfile data={data} setData={setData} />
+        <Provider>
+          <UserProfile data={data} setData={setData} />
+        </Provider>
       }
 
     </>
