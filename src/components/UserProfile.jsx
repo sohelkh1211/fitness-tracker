@@ -88,7 +88,7 @@ const UserProfile = ({ data, setData }) => {
 
         updateDatabse();
 
-    }, [data]);
+    }, []);
 
     useEffect(() => {
         const updateWaterIntake = () => {
@@ -113,7 +113,32 @@ const UserProfile = ({ data, setData }) => {
 
         updateDatabse();
 
-    }, [data]);
+    }, []);
+
+    useEffect(() => {
+        const updateSteps = () => {
+            const mostRecentDate = getMosRecentDate(localData.steps);
+            if ( mostRecentDate !== currentDate ) {
+                setLocalData({
+                    ...localData,
+                    steps: {
+                        ...localData.steps,
+                        [currentDate]: ''
+                    }
+                })
+                setData(localData);
+            }
+        }
+
+        const updateDatabse = async () => {
+            const userRef = dbRef(db, `UserData/${auth.currentUser.uid}`);
+            updateSteps();
+            await dbUpdate(userRef, localData);
+        }
+
+        updateDatabse();
+
+    }, []);
 
     
 

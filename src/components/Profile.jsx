@@ -23,10 +23,10 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // Importing pics
 import dashboard_fitness from '../assets/Dashboard_fitness.png';
-import heart from '../assets/heart-rate.png';
-import fire from '../assets/fire.png';
+import footsteps from '../assets/footsteps.png';
 import sleep from '../assets/sleeping.png';
 import user from '../assets/user.png';
+import glass from '../assets/water-bottle.png';
 // Prime react components
 import { Dialog } from 'primereact/dialog';
 import { Button } from 'primereact/button';
@@ -259,12 +259,13 @@ const Profile = () => {
     const [hours, minutes] = time.split(":").map(Number); // Convert time string i.e "08:00" to ["08","00"] to numbers that are hours: 08 , minutes: 00
     return (hours + minutes / 60).toFixed(2);
   };
+  
 
   const [chartData, setChartData] = useState({
     labels: [],
     datasets: [
       {
-        label: option === "Sleep" ? "Sleep hours" : '',
+        // label: option === "Sleep" ? "Sleep hours" : option === "Water Tracker" ? "Hydration level" : option === "Steps count" ? "Steps" : "",
         data: [],
         backgroundColor: "#22D3EE", // #50AF95
         borderColor: "black",
@@ -279,6 +280,11 @@ const Profile = () => {
       date,
       hours: convertTimeToHours(time)
     })); // returns array of objects [ { date: '01-06-2024', hours: '6.50' }, { date: '02-06-2024', hours: '7.33' }, { date: '03-06-2024', hours: '7.20' }, ... ]
+
+    var waterData = Object.entries(data.water_intake).map(([date, count]) => ({
+      date: new Date(date.split("-").reverse().join("-")),
+      count
+    }));
 
     if (option === "Sleep" && sleepData.length >= 7 || sleepData.length < 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
       let temp = sleepData.map((item) => ({
@@ -342,8 +348,7 @@ const Profile = () => {
         date: new Date(item.date.split("-").reverse().join("-"))
       }));
       temp.sort((a, b) => a.date - b.date);
-      temp = temp.slice(-123);
-      // console.log(temp);
+      temp = temp.slice(-123); // 123 is expected maximum days in 4 months i.e July, August, September, October
       var monthNames = [(temp[0].date).toLocaleString('default', { month: 'long' })];
       var currentMonthHours = [];
       var results = [];
@@ -369,12 +374,74 @@ const Profile = () => {
       // console.log(results);
     }
 
+    if (option === "Water Tracker" && period === "Daily") {
+      let temp = waterData.sort((a, b) => a.date - b.date);
+      temp = temp.map((item) => ({
+        ...item,
+        date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
+      }));
+      var waterDailyData = temp.slice(-7);
+    }
+
+    if (option === "Water Tracker" && period === "Weekly") {
+      let temp = waterData.sort((a, b) => a.date - b.date);
+      temp = temp.map((item) => ({
+        ...item,
+        date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
+      }));
+      temp = temp.slice(-28);
+      let weekCount = 1;
+      let currentWeek = [];
+      var waterWeekData = {};
+
+      for (let i = 0; i < temp.length; i++) {
+        currentWeek.push(temp[i].count);
+        if (currentWeek.length === 7 || i === temp.length - 1) {
+          let sumCount = currentWeek.reduce((sum, item) => sum + parseInt(item), 0);
+          let avgCount = sumCount / currentWeek.length;
+          waterWeekData[`week${weekCount}`] = avgCount.toFixed(2);
+          weekCount++;
+          currentWeek = [];
+        }
+      }
+    }
+
+    if(option === "Water Tracker" && period === "Monthly") {
+      let temp = waterData.sort((a, b) => a.date - b.date);
+      // temp = temp.map((item) => ({
+      //   ...item,
+      //   date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
+      // }));
+      temp = temp.slice(-123);
+      var monthNames = [(temp[0].date).toLocaleString('default', { month: 'long' })];
+      var currentMonthCount = [];
+      var waterMonthlyData = [];
+
+      for (let i = 0; i < temp.length; i++) {
+        if (monthNames.slice(-1) == (temp[i].date).toLocaleString('default', { month: 'long' }) && i !== temp.length - 1) {
+          currentMonthCount.push(temp[i].count);
+        }
+        else {
+          if (i !== temp.length - 1) {
+            monthNames.push((temp[i].date).toLocaleString('default', { month: 'long' }));
+          }
+          else {
+            currentMonthCount.push(temp[i].count);
+          }
+          const totalMonthCounts = currentMonthCount.reduce((sum, item) => sum + parseInt(item), 0);
+          const avgMonthCounts = totalMonthCounts / currentMonthCount.length;
+          waterMonthlyData.push(avgMonthCounts.toFixed(2));
+          currentMonthCount = [temp[i].count];
+        }
+      }
+    }
+
     setChartData({
-      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : [],
+      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.date) : option === "Water Tracker" && period === "Weekly" ? Object.keys(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? monthNames : [],
       datasets: [
         {
           ...chartData.datasets[0],
-          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : [],
+          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.count) : option === "Water Tracker" && period === "Weekly" ? Object.values(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? waterMonthlyData : [],
         }
       ]
     });
@@ -382,7 +449,6 @@ const Profile = () => {
   }, [data, user_id, option]); // useEffect Runs whenever there is change in data, user_id [ when user logs in ] and changes options i.e to sleep, water_intake etc.
 
   // *****************************************************************
-
 
   return (
     <>
@@ -526,16 +592,16 @@ const Profile = () => {
         {/* tr #D3D3D3 -> #FF6B6B, #FF7878 -> #FFFFFF */}
         <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
           {dashboard_card.map((card, index) => (
-            <div key={index} className={`${card.name === "Calories Burnt" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Heart Rate" ? 'bg-heart bg-cover' : 'bg-calories bg-cover'}  border border-black`} onClick={() => {
-              if (card.name === "Sleep") {
+            <div key={index} className={`${card.name === "Water Tracker" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Steps count" ? 'bg-steps bg-cover' : 'bg-water bg-cover'}  border border-black`} onClick={() => {
+              if (card.name !== "Steps count") {
                 setProfile("Profile");
               }
             }}>
               <div className="flex flex-row justify-between gap-x-6">
                 <p className={`text-left dashboard font-bold`}>{card.name}</p>
-                <img src={`${card.name === "Heart Rate" ? heart : card.name === "Calories Burnt" ? fire : sleep}`} className="w-[40px]" />
+                <img src={`${card.name === "Steps count" ? footsteps : card.name === "Water Tracker" ? glass : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : "---"}  {card.measure}</p>
+              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : card.name === "Water Tracker" && data.water_intake[value.format("DD-MM-YYYY")] ? data.water_intake[value.format("DD-MM-YYYY")] : card.name === "Steps count" && data.steps[value.format("DD-MM-YYYY")] ? data.steps[value.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>
@@ -552,13 +618,13 @@ const Profile = () => {
           {/* For option tracker selection like Heart Rate*/}
           {open && <div className="absolute mt-10 ml-[620px] w-[120px] px-3 py-1 flex flex-col bg-white z-20 items-start space-y-1 rounded-md border">
             <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
-              setOption("Heart Rate");
+              setOption("Steps count");
               setOpen(!open);
-            }}>Heart Rate</p>
+            }}>Steps count</p>
             <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
-              setOption("Calories Burnt");
+              setOption("Water Tracker");
               setOpen(!open);
-            }}>Calories Burnt</p>
+            }}>Water Tracker</p>
             <p className="text-[14px] dashboard cursor-pointer" onClick={() => {
               setOption("Sleep");
               setOpen(!open);
@@ -593,8 +659,15 @@ const Profile = () => {
                   period === "Monthly" ? (
                     <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Sleep Hours" }, legend: { display: false } } }} />
                   ) : null
-            ) : option === "Calories Burnt" ? (
-              <p className="mx-auto text-[35px]">No Data Available</p>
+            ) : option === "Water Tracker" ? (
+              period === "Daily" ?
+                <Line className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Daily water intake" }, legend: { display: false } } }} />
+                :
+                period === "Weekly" ?
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Hydration Levels" }, legend: { display: false } } }} /> :
+                  period === "Monthly" ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Hydration Levels" }, legend: { display: false } } }} /> :
+                    <p className="mx-auto text-[35px]">No Data Available</p>
             ) : null}
           </div>
         </div>

@@ -52,6 +52,9 @@ const Provider = ({ children }) => {
     water_intake: {
       [currentDate]: '1'
     },
+    steps: {
+      [currentDate]: ''
+    }
   });
 
   // console.log("Provider component :- ",profile);
