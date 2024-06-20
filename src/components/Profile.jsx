@@ -286,6 +286,11 @@ const Profile = () => {
       count
     }));
 
+    var stepsData = Object.entries(data.steps).map(([date, step]) => ({
+      date: new Date(date.split("-").reverse().join("-")),
+      step
+    }));
+
     if (option === "Sleep" && sleepData.length >= 7 || sleepData.length < 7 && period === "Daily") { // If we have more than 7 days of user's sleep data then we only show recent 7 days graph to user.
       let temp = sleepData.map((item) => ({
         ...item,
@@ -436,12 +441,44 @@ const Profile = () => {
       }
     }
 
+    if (option === "Steps count" && period === "Daily") {
+      let temp = stepsData.sort((a, b) => a.date - b.date);
+      temp = temp.map((item) => ({
+        ...item,
+        date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
+      }));
+      var stepsDailyData = temp.slice(-7);
+    }
+
+    if (option === "Steps count" && period === "Weekly") {
+      let temp = stepsData.sort((a, b) => a.date - b.date);
+      temp = temp.map((item) => ({
+        ...item,
+        date: `${String(item.date.getDate()).padStart(2, '0')}-${String(item.date.getMonth() + 1).padStart(2, '0')}-${String(item.date.getFullYear())}`
+      }));
+      temp = temp.slice(-28);
+      let weekCount = 1;
+      let currentWeek = [];
+      var stepsWeekData = {};
+
+      for (let i = 0; i < temp.length; i++) {
+        currentWeek.push(temp[i].step);
+        if (currentWeek.length === 7 || i === temp.length - 1) {
+          let sumStepsCount = currentWeek.reduce((sum, item) => sum + parseFloat(item), 0);
+          let avgStepsCount = sumStepsCount / currentWeek.length;
+          stepsWeekData[`week${weekCount}`] = avgStepsCount;
+          weekCount++;
+          currentWeek = [];
+        }
+      }
+    }
+
     setChartData({
-      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.date) : option === "Water Tracker" && period === "Weekly" ? Object.keys(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? monthNames : [],
+      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.date) : option === "Water Tracker" && period === "Weekly" ? Object.keys(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? monthNames : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.date) : option === "Steps count" && period === "Weekly" ? Object.keys(stepsWeekData) : [],
       datasets: [
         {
           ...chartData.datasets[0],
-          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.count) : option === "Water Tracker" && period === "Weekly" ? Object.values(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? waterMonthlyData : [],
+          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.count) : option === "Water Tracker" && period === "Weekly" ? Object.values(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? waterMonthlyData : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.step) : option === "Steps count" && period === "Weekly" ? Object.values(stepsWeekData) : [],
         }
       ]
     });
@@ -664,7 +701,13 @@ const Profile = () => {
                   period === "Monthly" ?
                     <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Hydration Levels" }, legend: { display: false } } }} /> :
                     <p className="mx-auto text-[35px]">No Data Available</p>
-            ) : null}
+            ) : option === "Steps count" ? (
+              period === "Daily" ?
+                <Line className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Daily Steps count" }, legend: { display: false } } }} /> :
+                period === "Weekly" ?
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Steps count" }, legend: { display: false } } }} /> : null
+            ) : null
+          }
           </div>
         </div>
         <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
