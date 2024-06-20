@@ -1,7 +1,7 @@
 import { user_profiles } from ".";
 import { dashboard_card } from ".";
 import { tracker_graph } from ".";
-import { useState, useContext, useRef, useEffect } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Provider, { GlobalContext } from "../context/Provider";
 import { toast } from 'react-hot-toast';
@@ -58,7 +58,7 @@ const Profile = () => {
 
   const [period, setPeriod] = useState("Daily"); {/* For displaying Weekly, Monthly graph */ }
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
-  const [option, setOption] = useState("Sleep");
+  const [option, setOption] = useState("Steps count");
   // *************************************************************
 
   // ******************* To view EventForm **********************
@@ -473,12 +473,38 @@ const Profile = () => {
       }
     }
 
+    if (option === "Steps count" && period === "Monthly") {
+      let temp = stepsData.sort((a, b) => a.date - b.date);
+      temp = temp.slice(-123);
+      var monthNames = [temp[0].date.toLocaleDateString('default', { month: 'long' })];
+      var currentMonthCount = [];
+      var stepsMonthlyData = [];
+
+      for (let i = 0; i < temp.length; i++) {
+        if (monthNames.slice(-1) == (temp[i].date).toLocaleString('default', { month: 'long' }) && i !== temp.length - 1) {
+          currentMonthCount.push(temp[i].step);
+        }
+        else {
+          if (i !== temp.length - 1) {
+            monthNames.push((temp[i].date).toLocaleString('default', { month: 'long' }));
+          }
+          else {
+            currentMonthCount.push(temp[i].step);
+          }
+          const totalMonthCounts = currentMonthCount.reduce((sum, item) => sum + parseInt(item), 0);
+          const avgMonthCounts = totalMonthCounts / currentMonthCount.length;
+          stepsMonthlyData.push(avgMonthCounts.toFixed(2));
+          currentMonthCount = [temp[i].step];
+        }
+      }
+    }
+
     setChartData({
-      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.date) : option === "Water Tracker" && period === "Weekly" ? Object.keys(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? monthNames : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.date) : option === "Steps count" && period === "Weekly" ? Object.keys(stepsWeekData) : [],
+      labels: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.date) : option === "Sleep" && period === "Weekly" ? Object.keys(finalWalaResult) : option === "Sleep" && period === "Monthly" ? monthNames : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.date) : option === "Water Tracker" && period === "Weekly" ? Object.keys(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? monthNames : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.date) : option === "Steps count" && period === "Weekly" ? Object.keys(stepsWeekData) : option === "Steps count" && period === "Monthly" ? monthNames : [],
       datasets: [
         {
           ...chartData.datasets[0],
-          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.count) : option === "Water Tracker" && period === "Weekly" ? Object.values(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? waterMonthlyData : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.step) : option === "Steps count" && period === "Weekly" ? Object.values(stepsWeekData) : [],
+          data: option === "Sleep" && period === "Daily" ? sleepDailyData.map(item => item.hours) : option === "Sleep" && period === "Weekly" ? Object.values(finalWalaResult) : option === "Sleep" && period === "Monthly" ? results : option === "Water Tracker" && period === "Daily" ? waterDailyData.map(item => item.count) : option === "Water Tracker" && period === "Weekly" ? Object.values(waterWeekData) : option === "Water Tracker" && period === "Monthly" ? waterMonthlyData : option === "Steps count" && period === "Daily" ? stepsDailyData.map(item => item.step) : option === "Steps count" && period === "Weekly" ? Object.values(stepsWeekData) : option === "Steps count" && period === "Monthly" ? stepsMonthlyData : [],
         }
       ]
     });
@@ -705,9 +731,11 @@ const Profile = () => {
               period === "Daily" ?
                 <Line className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Daily Steps count" }, legend: { display: false } } }} /> :
                 period === "Weekly" ?
-                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Steps count" }, legend: { display: false } } }} /> : null
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Steps count" }, legend: { display: false } } }} /> :
+                  period === "Monthly" ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Steps count" }, legend: { display: false } } }} /> : null
             ) : null
-          }
+            }
           </div>
         </div>
         <div className="flex mt-[890px] border-none"></div> {/* To add bottom space. */}
