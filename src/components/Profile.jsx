@@ -54,7 +54,7 @@ const Profile = () => {
 
   // **************** Dashboard top calendar **********************
   let currentDate = new Date().toDateString();
-  const [value, setValue] = useState(dayjs(currentDate));
+  const [val, setVal] = useState(dayjs(currentDate));
 
   const [period, setPeriod] = useState("Daily"); {/* For displaying Weekly, Monthly graph */ }
   const [open, setOpen] = useState(false); {/* For selecting trackers */ }
@@ -259,7 +259,7 @@ const Profile = () => {
     const [hours, minutes] = time.split(":").map(Number); // Convert time string i.e "08:00" to ["08","00"] to numbers that are hours: 08 , minutes: 00
     return (hours + minutes / 60).toFixed(2);
   };
-  
+
 
   const [chartData, setChartData] = useState({
     labels: [],
@@ -406,7 +406,7 @@ const Profile = () => {
       }
     }
 
-    if(option === "Water Tracker" && period === "Monthly") {
+    if (option === "Water Tracker" && period === "Monthly") {
       let temp = waterData.sort((a, b) => a.date - b.date);
       // temp = temp.map((item) => ({
       //   ...item,
@@ -559,11 +559,11 @@ const Profile = () => {
         <LocalizationProvider dateAdapter={AdapterDayjs} >
           <div className="absolute flex flex-row right-0 mt-4 lg:mr-10 cursor-pointer border border-none" >
             <DatePicker
-              value={value}
-              defaultValue={value}
+              value={val}
+              defaultValue={val}
               disableFuture
-              onChange={(newValue) => setValue(newValue)}
-              format={formatDate(value)}
+              onChange={(newValue) => setVal(newValue)}
+              format={formatDate(val)}
               sx={{
                 '& .MuiInputBase-input': {
                   width: '100px',
@@ -592,16 +592,12 @@ const Profile = () => {
         {/* tr #D3D3D3 -> #FF6B6B, #FF7878 -> #FFFFFF */}
         <div className="absolute flex flex-row mt-[330px] lg:ml-8 justify-between gap-x-8 rounded-xl border-none">
           {dashboard_card.map((card, index) => (
-            <div key={index} className={`${card.name === "Water Tracker" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Steps count" ? 'bg-steps bg-cover' : 'bg-water bg-cover'}  border border-black`} onClick={() => {
-              if (card.name !== "Steps count") {
-                setProfile("Profile");
-              }
-            }}>
+            <div key={index} className={`${card.name === "Water Tracker" ? 'w-[200px]' : 'w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Steps count" ? 'bg-steps bg-cover' : 'bg-water bg-cover'}  border border-black`} onClick={() => setProfile("Profile")}>
               <div className="flex flex-row justify-between gap-x-6">
                 <p className={`text-left dashboard font-bold`}>{card.name}</p>
                 <img src={`${card.name === "Steps count" ? footsteps : card.name === "Water Tracker" ? glass : sleep}`} className="w-[40px]" />
               </div>
-              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[value.format("DD-MM-YYYY")] ? data.sleep[value.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : card.name === "Water Tracker" && data.water_intake[value.format("DD-MM-YYYY")] ? data.water_intake[value.format("DD-MM-YYYY")] : card.name === "Steps count" && data.steps[value.format("DD-MM-YYYY")] ? data.steps[value.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
+              <p className="text-left mt-8 dashboard text-[15px]">{card.name === "Sleep" && data.sleep[val.format("DD-MM-YYYY")] ? data.sleep[val.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : card.name === "Water Tracker" && data.water_intake[val.format("DD-MM-YYYY")] ? data.water_intake[val.format("DD-MM-YYYY")] : card.name === "Steps count" && data.steps[val.format("DD-MM-YYYY")] ? data.steps[val.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>

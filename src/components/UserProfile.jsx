@@ -19,7 +19,7 @@ const UserProfile = ({ data, setData }) => {
     let currentDate = new Date().toDateString();
     currentDate = dayjs(currentDate).format("DD-MM-YYYY");
 
-    // console.log(localData);
+    // console.log("Local: ",localData);
 
     const trackerChange = (e) => {
         const { name, value } = e.target;
@@ -41,8 +41,15 @@ const UserProfile = ({ data, setData }) => {
                 }
             }));
         }
-
-
+        if (name === "steps") {
+            setLocalData(localData => ({
+                ...localData,
+                steps: {
+                    ...localData.steps,
+                    [currentDate]: value
+                }
+            }));
+        }
     }
 
     const handleInputChange = (e) => {
@@ -123,7 +130,7 @@ const UserProfile = ({ data, setData }) => {
                     ...localData,
                     steps: {
                         ...localData.steps,
-                        [currentDate]: ''
+                        [currentDate]: 1
                     }
                 })
                 setData(localData);
@@ -171,7 +178,7 @@ const UserProfile = ({ data, setData }) => {
                 <h1 className="text-[25px] dashboard">My Profile</h1>
             </div>
             <form onSubmit={handleSubmit}>
-                <div className="absolute flex lg:mt-[80px] lg:ml-[42px] lg:pt-3 lg:pb-6 lg:w-[766px] lg:h-[330px] rounded-md border border-gray-400">
+                <div className="absolute flex lg:mt-[80px] lg:ml-[42px] lg:pt-3 lg:pb-6 lg:w-[766px] lg:h-[420px] rounded-md border border-gray-400">
                     <div className="">
                         <p className="text-left lg:ml-4">First Name</p>
                         <input disabled={!change} type="text" name="first_name" placeholder="First Name" defaultValue={localData.first_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key == ' ') e.preventDefault() }} className="right-0 lg:ml-4 lg:mt-1 lg:px-2 lg:py-0.5 lg:w-[300px] rounded-md border border-black outline-none focus:border-emerald-300" />
@@ -204,13 +211,17 @@ const UserProfile = ({ data, setData }) => {
                         <p className="text-left">Water Intake Limit</p>
                         <InputNumber disabled={!change} name='water_intake' onValueChange={trackerChange} value={localData.water_intake[currentDate] || ''} mode="decimal" showButtons min={1} max={15} />
                     </div>
+                    <div className="absolute lg:mt-[320px] lg:ml-4">
+                        <p className="text-left">Steps count</p>
+                        <InputNumber disabled={!change} name='steps' onValueChange={trackerChange} value={localData.steps[currentDate] || ''} mode="decimal" showButtons />
+                    </div>
                 </div>
                 {change &&
-                    <button type='submit' className='absolute flex text-green-400 lg:px-2 lg:py-1 lg:top-[430px] lg:ml-[460px] hover:shadow-lg rounded-md border border-green-500 cursor-pointer'>Save Changes</button>
+                    <button type='submit' className='absolute flex text-green-400 lg:px-2 lg:py-1 lg:top-[530px] lg:ml-[460px] hover:shadow-lg rounded-md border border-green-500 cursor-pointer'>Save Changes</button>
                 }
             </form>
-            {change && <button onClick={() => setChange(false)} className='absolute flex text-black-100 lg:px-4 lg:py-1 lg:top-[430px] lg:ml-[340px] hover:shadow-lg rounded-md border border-gray-300 cursor-pointer'>Cancel</button>}
-            {!change && <button onClick={() => setChange(true)} className="absolute flex text-black-100 lg:px-2 lg:py-1 lg:top-[430px] lg:ml-[380px] hover:shadow-lg bg-green-300 rounded-md border border-green-300 cursor-pointer">Edit Changes</button>}
+            {change && <button onClick={() => setChange(false)} className='absolute flex text-black-100 lg:px-4 lg:py-1 lg:top-[530px] lg:ml-[340px] hover:shadow-lg rounded-md border border-gray-300 cursor-pointer'>Cancel</button>}
+            {!change && <button onClick={() => setChange(true)} className="absolute flex text-black-100 lg:px-2 lg:py-1 lg:top-[530px] lg:ml-[380px] hover:shadow-lg bg-green-300 rounded-md border border-green-300 cursor-pointer">Edit Changes</button>}
         </div>
     )
 }
