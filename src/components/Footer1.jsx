@@ -1,12 +1,11 @@
 import React from 'react'
-import toast from 'react-hot-toast';
 
-const Footer1 = ({ space_above }) => {
+const Footer1 = () => {
   return (
-    <div style={{ top: space_above }} className='fixed items-center left-0 flex w-full h-[50px] bg-purple-500'>
-        <h1 className='font-bold mx-auto text-[19px]'>Made with ❤️ by <span className='font-bold italic underline cursor-pointer' onClick={() => toast.error("Test Toaster")}>Sohel Khan</span></h1>
-    </div>
+    <footer className='absolute left-0 mt-[100px] flex items-center justify-center w-screen h-[40px] bg-purple-500'>
+        <h1 className='font-bold mx-auto text-[19px]'>Made with ❤️ by <a className='font-bold italic underline cursor-pointer' href='https://www.linkedin.com/in/mohammed-sohel-khan-452479259/' target='_ blank' rel="noopener">Sohel Khan</a></h1>
+    </footer>
   )
 }
 
-export default Footer1
+export default Footer1;

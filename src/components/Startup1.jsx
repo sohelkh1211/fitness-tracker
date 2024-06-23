@@ -49,8 +49,9 @@ const Startup1 = () => {
                     </svg>
                 </button>
             </div>
-            {toggle && <div className='xs:absolute z-10 sm:hidden top-[80px] w-[300px] py-2 bg-white border rounded-md'>
+            {toggle && <div className='xs:fixed z-10 sm:hidden top-[80px] w-[300px] py-2 bg-white border rounded-md'>
                 <ul className='list-none flex flex-col justify-between items-start gap-y-2 px-4'>
+                    <li><a href='/user/profile'>Dashboard</a></li>
                     <li><a href='/home'>Home</a></li>
                     <li><a href=''>About</a></li>
                     <li><a href=''>Contact</a></li>

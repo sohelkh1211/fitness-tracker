@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
     const { user } = useContext(GlobalContext);
 
     // Return the Element if login is true else Navigate to /login.
-    return user ? <Outlet /> : <Navigate to="/login" replace
+    return user ? <Outlet /> : <Navigate to="/login" replace // replace /home route or state when user is not logged in and trying to access protective routes.
         state={{ from: location }} />;
 }
 
