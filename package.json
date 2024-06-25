@@ -20,6 +20,7 @@
     "@mui/icons-material": "^5.15.11",
     "@mui/lab": "^5.0.0-alpha.170",
     "@mui/material": "^5.15.11",
+    "@mui/styles": "^5.15.20",
     "@mui/x-date-pickers": "^7.3.2",
     "chart.js": "^4.4.3",
     "dayjs": "^1.11.11",
