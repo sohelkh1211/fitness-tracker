@@ -2,7 +2,6 @@ import React, { useState, useEffect, useContext } from 'react'
 import { GlobalContext } from '../context/Provider';
 import { Link } from 'react-router-dom';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { makeStyles } from '@mui/styles';
 import pic from '../assets/pullup.jpg';
 import pic1 from '../assets/deadlift.jpg';
 import pic2 from '../assets/pushup.jpg';
