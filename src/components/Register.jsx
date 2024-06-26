@@ -3,12 +3,15 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import fitness_bg from '../assets/bg1.jpg';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 // Firebase
 import { auth, db } from '../firebase';
 import { ref as dbRef, set } from 'firebase/database';
 
 const Register = () => {
     const navigate = useNavigate();
+    const [showPassword,setShowPassword] = useState(false);
     const ages = [];
     for (let i = 18; i <= 60; i++) {
         ages.push(i);
@@ -129,7 +132,7 @@ const Register = () => {
 
     return (
         <>
-            <img src={fitness_bg} className='fixed top-0 left-0 sm:h-full sm:w-full xs:w-full xs:h-full object-cover blur-sm ' />
+            <img src={fitness_bg} className='fixed top-0 left-0 w-full h-full object-cover blur-sm ' />
             <div className='relative flex mx-auto sm:w-[600px] sm:h-[640px] xs:w-full xs:h-[580px] rounded-lg container'>
                 <form onSubmit={handleSubmit} method='POST'>
                     <div className='flex sm:ml-[180px] xs:ml-[40px] border-none border-black sm:mt-14 xs:mt-6 w-fit'>
@@ -137,8 +140,8 @@ const Register = () => {
                     </div>
                     <div className='absolute sm:mt-4 xs:mt-2 sm:ml-[110px] xs:ml-[25px] sm:pl-[10px] xs:pl-0 pb-4 flex flex-col sm:w-[400px] xs:w-[200px] pt-6 justify-between gap-y-4 border-none border-[1.35px] border-black'>
                         {/* The onkeydown event occurs when the user presses a key on the keyboard. In first_name & laast_name we are restricting user to press spacebar key. */}
-                        <input type="text" name="first_name" placeholder="First Name" value={formData.first_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
-                        <input type="text" name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
+                        <input type="text" name="first_name" placeholder="First Name" value={formData.first_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ' || !/[A-Za-z]/.test(e.key)) { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
+                        <input type="text" name="last_name" placeholder="Last Name" value={formData.last_name} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ' || !/[A-Za-z]/.test(e.key)) { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1 ' />
                         <input type="email" name="email" placeholder="Email" value={formData.email} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
                         <select name="gender" className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' value={formData.gender} onChange={handleInputChange}>
                             <option value="gender">Gender</option>
@@ -147,9 +150,25 @@ const Register = () => {
                         </select>
                         <input type="date" name="dob" className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' value={formData.dob} onChange={handleInputChange} />
                         <input type='number' name="height" placeholder='Your height in Ft' value={formData.height} onChange={handleInputChange} onKeyDown={(e) => { if (e.key === ' ') { e.preventDefault() } }} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
-                        <input type="password" name="password" placeholder="Set Passsword" value={userCredential.password} onChange={handleUser} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
-                        <input type="password" name="confirmPassword" placeholder="Confirm Password" value={userCredential.confirmPassword} onChange={handleUser} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
-                        <button type='submit' className='border  sm:w-fit xs:w-[100px] sm:ml-[115px] xs:ml-[50px] sm:px-10 xs:px-4 sm:py-2 xs:py-2 bg-emerald-300 border-green-400 rounded-md'>Sign Up</button>
+                        <div className='absolute flex mt-[305px]'>
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                name="password"
+                                placeholder="Set Password"
+                                value={userCredential.password}
+                                onChange={handleUser}
+                                className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1'
+                            />
+                            <FontAwesomeIcon
+                                icon={showPassword ? faEyeSlash : faEye}
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="absolute right-3 top-2.5 cursor-pointer"
+                            />
+                        </div>
+                        <div className='absolute flex mt-[355px]'>
+                            <input type="password" name="confirmPassword" placeholder="Confirm Password" value={userCredential.confirmPassword} onChange={handleUser} className='sm:w-[350px] xs:w-[200px] rounded-md bg-transparent focus:border-cyan-700 outline-none border-[1.4px] border-black pl-1 py-1' />
+                        </div>
+                        <button type='submit' className='border mt-[100px] sm:w-fit xs:w-[100px] sm:ml-[115px] xs:ml-[50px] sm:px-10 xs:px-4 sm:py-2 xs:py-2 bg-emerald-300 border-green-400 rounded-md'>Sign Up</button>
                     </div>
                 </form>
             </div>
