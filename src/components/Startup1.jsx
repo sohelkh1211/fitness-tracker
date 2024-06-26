@@ -10,14 +10,7 @@ import sleep from '../assets/sleep_tracker1.avif';
 import Hydration from '../assets/Hydration.jpg';
 import { useNavigate } from 'react-router-dom';
 
-const useStyles = makeStyles((theme) => ({
-    icon: {
-        display: 'none'
-    }
-}));
-
 const Startup1 = () => {
-    const classes = useStyles();
     const [toggle, setToggle] = useState(false); // For mobile xs devices
     const [isscroll, setIsscroll] = useState(false); // To style navbar bottom border green -> on scroll 
 
