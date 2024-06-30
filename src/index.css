@@ -53,9 +53,16 @@ html::-webkit-scrollbar-thumb {
   background-color: #be6ff2;
 }
 
+/* ********* Register Styling ************** */
 .container{
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.35);
 }
+
+.placeholder-color::placeholder {
+  color: #000; /* Change this to your desired color */
+  font-weight: 500;
+}
+/* **************************************** */
 
 .slider {
   background: linear-gradient(109.6deg, rgb(36, 45, 57) 11.2%, rgb(16, 37, 60) 51.2%, rgb(0, 0, 0) 98.6%);
@@ -86,7 +93,7 @@ body {
 }
 /* *************************************************** */
 
-/* ************* Input Form styling *************** */
+/* ************* Input Form Sleep and Steps styling *************** */
 .p-inputnumber {
   margin-top: 5px;
   border-radius: 4px;
@@ -94,10 +101,24 @@ body {
 
 .p-inputnumber-input {
   border: 1px solid black;
-  width: 270px;
+  width: 14.6rem;
   border-right: 0;
   padding-left: 8px;
   box-shadow: none;
+}
+
+@media (min-width: 768px) and (max-width:1024px) {
+  .p-inputnumber-input {
+    width: 8rem;
+  }
+  
+}
+
+@media (min-width: 650px) and (max-width: 768px) {
+  .p-inputnumber-input {
+    width: 1rem;
+  }
+  
 }
 
 .p-inputnumber-button {
