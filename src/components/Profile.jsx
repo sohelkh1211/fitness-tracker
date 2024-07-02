@@ -22,6 +22,10 @@ import dayjs from 'dayjs';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { createTheme, ThemeProvider } from "@mui/material";
+import CloseIcon from '@mui/icons-material/Close';
+import MenuIcon from '@mui/icons-material/Menu';
+// Framer motion
+import { motion } from 'framer-motion';
 // Importing pics
 import dashboard_fitness from '../assets/Dashboard_fitness.png';
 import footsteps from '../assets/footsteps.png';
@@ -50,7 +54,7 @@ import { fetchUserData } from "../utils/fetchData";
 const theme = createTheme({
   breakpoints: {
     values: {
-      xs: 0,
+      xs: 250,
       sm: 650, // Custom value for small screens
       md: 768, // Custom value for medium screens
       lg: 1024, // Custom value for large screens
@@ -86,6 +90,14 @@ const Profile = () => {
   // ****************** For Displaying User Events *******************
   const [events, setEvents] = useState([]);
   // *****************************************************************
+
+  // ****************** For toggling right side bar ******************
+  const [toggle, setToggle] = useState(false);
+  // ***************************************
+
+  // **************** For xs device displaying graph ***************
+  const [showGraph, setShowGraph] = useState(false);
+  // ***************************************************************
 
   // ************* For user profile image ****************** //
   const [imagecrop, setImagecrop] = useState(false); {/* To display or hide dialogue box. */ }
@@ -522,18 +534,36 @@ const Profile = () => {
 
   }, [data, user_id, option]); // useEffect Runs whenever there is change in data, user_id [ when user logs in ] and changes options i.e to sleep, water_intake etc.
 
+  const fade = () => {
+    return {
+      hidden: {
+        opacity: window.innerWidth < 650 ? 0 : 1,
+        translateX: window.innerWidth < 650 ? -20 : 0
+      },
+      visible: {
+        opacity: window.innerWidth < 650 ? 1 : 1,
+        translateX: window.innerWidth < 650 ? 0 : 0,
+        transition: {
+          type: "spring",
+          duration: 1,
+          delay: 0.1,
+        }
+      }
+    }
+  }
   // *****************************************************************
 
   return (
     <>
-      {/* ************ For the side bar *************** */}
-      <div className='absolute flex flex-col top-0 left-0 lg:w-[16.5%] md:w-[18%] sm:w-[19%] h-[162%] bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]'>
-        <div className='mt-4 mb-12 mx-auto border-black border-none'> {/* For Healthify title.*/}
-          <h1 className='lg:text-[23px] md:text-[21px] sm:text-[20px] text-white'><span className='font-bold'>Health</span>ify</h1>
+      {/* ************ For the side bar *************** */} {/* Do replace || with && before toggle */}
+      {(window.innerWidth > 649 || (window.innerWidth <= 649 && toggle)) && <motion.div initial="hidden" animate="visible" variants={fade()} className={`absolute flex flex-col top-0 left-0 lg:w-[16.5%] md:w-[18%] sm:w-[19%] xs:w-[9rem] h-[162%] z-[10] bg-gradient-to-tr from-[#AD1DEB] to-[#6E72FC] border border-[#AD1DEB]`}>
+        <div className='flex flex-row sm:justify-normal xs:justify-start xs:space-x-2 sm:space-x-0 items-end mt-4 mb-12 sm:mx-auto sm:pl-0 xs:pl-2 border-black border-none'> {/* For Healthify title.*/}
+          <ThemeProvider theme={theme}><CloseIcon className="text-white" sx={{ display: { sm: 'none' } }} onClick={() => setToggle(!toggle)} /></ThemeProvider>
+          <div><h1 className='lg:text-[23px] md:text-[21px] sm:text-[20px] xs:text-[18px] text-white'><span className='font-bold'>Health</span>ify</h1></div>
         </div>
         {/* For displaying each profile such as dashboard, profile etc. */}
         {user_profiles.map((item, index) => (
-          <div key={index} className="flex flex-row md:gap-x-3 xs:gap-x-2 w-fit lg:ml-[20%] md:ml-[13%] sm:ml-[12%] mb-6 cursor-pointer border-black border-none">
+          <div key={index} className="flex flex-row md:gap-x-3 xs:gap-x-2 w-fit lg:ml-[20%] md:ml-[13%] sm:ml-[12%] xs:ml-[10%] mb-6 cursor-pointer border-black border-none">
             {item.name === "Profile" ? <FontAwesomeIcon className={`mt-1 w-5 -ml-0.8 text-white ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} icon={faUser} /> : item.name === "Dashboard" ? <DashboardIcon sx={{ width: 18, height: 25, color: 'white' }} className={`${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : item.name === "Exercise" ? <FitnessCenterIcon sx={{ width: 19, height: 22, color: 'white' }} className={`mt-0.5 ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : item.name === "Logout" ? <LogoutIcon sx={{ width: 18, height: 22, color: 'white' }} className={`mt-0.5 ${profile === item.name ? 'brightness-100' : 'brightness-50'}`} /> : ''}
             <p className={`text-white sm:text-[15px] md:text-[16px] ${profile === item.name ? 'font-bold' : ''}`} onClick={() => {
               setProfile(item.name);
@@ -545,13 +575,17 @@ const Profile = () => {
             }}>{item.name}</p>
           </div>
         ))}
-      </div>
+      </motion.div>}
+      {/* ******** For xs devices menu Icon ************ */}
+      {!toggle && <div className="sm:invisible absolute flex top-0 left-0 xs:visible w-full px-3 py-2 border-none border-black">
+        <MenuIcon onClick={() => setToggle(!toggle)} />
+      </div>}
       {/* ********************************************** */}
 
       {/* *************** For right side bar ****************** */}
       {/* User's Image upload */}
-      <div className="absolute flex flex-col top-14 lg:ml-[85.5%] md:ml-[84%] sm:ml-[77%] border-black border-none">
-        <img src={data.image ? data.image : user} className="lg:w-[75%] md:w-[70%] sm:w-[80%] cursor-pointer mx-auto brightness-50"
+      <div className={`${profile === "Profile" ? 'xs:invisible sm:visible' : '' } absolute flex flex-col top-14 lg:ml-[85.5%] md:ml-[84%] sm:ml-[77%] xs:ml-[56%] border-black border-none`}>
+        <img src={data.image ? data.image : user} className="lg:w-[75%] md:w-[70%] sm:w-[80%] xs:w-[70%] cursor-pointer mx-auto brightness-50"
           onClick={() => setImagecrop(true)} alt="" />
         <p className="mt-2 font-bold text-[17px]">{data.first_name} {data.last_name}</p>
         <Dialog
@@ -559,8 +593,9 @@ const Profile = () => {
           className="bg-purple-50 rounded-lg"
           onHide={() => setImagecrop(false)}
           header={() => (
-            <p className="font-bold ">Upload Image</p>
+            <p className="font-bold">Upload Image</p>
           )}
+          style={{ width: '350px', height: '350px'}}
         >
           <div className="flex flex-col items-center">
             <Avatar
@@ -587,75 +622,78 @@ const Profile = () => {
       </div>
 
       {/* Displaying user's weight, height and age */}
-      <div className="absolute flex lg:flex-row sm:flex-col lg:px-[1%] md:px-0 sm:px-[1%] lg:py-2 md:py-0 sm:py-[0.4%] top-[220px] lg:ml-[83%] md:ml-[83%] sm:ml-[77%] justify-between lg:gap-x-2 bg-[#f4faff] rounded-md border">
-        <div className="flex lg:flex-col sm:flex-row lg:gap-0 sm:gap-x-1">
-          <p className="md:text-[14px] sm:text-[13px] font-bold">Weight</p>
-          <p className="md:text-[14px] sm:text-[13px]">{data.weight ? data.weight : '---'}</p>
+      <div className={`${profile === "Profile" ? 'xs:invisible sm:visible' : '' } absolute flex lg:flex-row xs:flex-col lg:px-[1%] md:px-0 sm:px-[1%] xs:px-1 lg:py-2 md:py-0 sm:py-[0.4%] xs:py-1.5 top-[220px] lg:ml-[83%] md:ml-[83%] sm:ml-[77%] xs:ml-[54.5%] justify-between lg:gap-x-2 bg-[#f4faff] rounded-md border`}>
+        <div className="flex lg:flex-col items-center sm:flex-row lg:gap-0 sm:gap-x-1 xs:gap-x-1">
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[15px] font-bold">Weight</p>
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[14px]">{data.weight ? data.weight : '---'}</p>
         </div>
-        <div className="flex lg:flex-col sm:flex-row lg:gap-0 sm:gap-x-1">
-          <p className="md:text-[14px] sm:text-[13px] font-bold">Height</p>
-          <p className="md:text-[14px] sm:text-[13px]">{data.height * 30.48} cm</p>
+        <div className="flex lg:flex-col items-center sm:flex-row lg:gap-0 sm:gap-x-1 xs:gap-x-1">
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[15px] font-bold">Height</p>
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[14px]">{data.height * 30.48} cm</p>
         </div>
-        <div className="flex lg:flex-col sm:flex-row lg:gap-0 sm:gap-x-1">
-          <p className="md:text-[14px] sm:text-[13px] font-bold">Age</p>
-          <p className="md:text-[14px] sm:text-[13px]">{data.age}</p>
+        <div className="flex lg:flex-col items-center sm:flex-row lg:gap-0 sm:gap-x-1 xs:gap-x-1">
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[15px] font-bold">Age</p>
+          <p className="md:text-[14px] sm:text-[13px] xs:text-[14px]">{data.age}</p>
         </div>
       </div>
 
       {/* Schedule Part */}
-      <div className="absolute flex flex-row lg:space-x-[12%] md:space-x-[10%] sm:space-x-[8%] lg:top-[310px] md:top-[315px] sm:top-[300px] md:ml-[82%] sm:ml-[76%] border border-none">
-        <p className="font-bold dashboard_schedule lg:text-[16px] md:text-[15px] sm:text-[14px]">Scheduled</p>
-        <ThemeProvider theme={theme}> <AddCircleIcon className="left-0 cursor-pointer border border-none text-black" sx={{ width: { lg: '20px', md: '18%', sm: '19%'}, marginTop: { md: 0, sm: '-1.5px'}  }} onClick={() => setEventView(true)} /></ThemeProvider>
+      <div className={`${profile === "Profile" ? 'xs:invisible sm:visible' : '' } absolute flex flex-row lg:space-x-[12%] md:space-x-[10%] sm:space-x-[8%] xs:space-x-[4%] lg:top-[310px] md:top-[315px] sm:top-[300px] xs:top-[310px] md:ml-[82%] sm:ml-[76%] xs:ml-[53%] border border-none`}>
+        <p className="font-bold dashboard_schedule lg:text-[16px] md:text-[15px] sm:text-[14px] xs:text-[15px]">Scheduled</p>
+        <ThemeProvider theme={theme}> <AddCircleIcon className="left-0 cursor-pointer border border-none text-black" sx={{ width: { lg: '20px', md: '18%', sm: '19%', xs: '18%' }, marginTop: { md: 0, sm: '-1.5px', xs: '-0.8px' } }} onClick={() => setEventView(true)} /></ThemeProvider>
         {eventView && <EventForm addEvent={addEvent} view={eventView} setView={setEventView} />}
       </div>
-      <div className="absolute flex flex-col lg:top-[350px] md:top-[345px] sm:top-[330px] md:ml-[82%] sm:ml-[75%] justify-between gap-y-2">
+      <div className={`${profile === "Profile" ? 'xs:invisible sm:visible' : '' } absolute flex flex-col lg:top-[350px] md:top-[345px] sm:top-[330px] xs:top-[350px] md:ml-[82%] sm:ml-[75%] xs:ml-[53%] xs:mr-[2%] justify-between gap-y-2`}>
         {/* Apply map function to show all scheduled task from firebase */}
         {events && events.map((ele) => (
-          <div key={ele.id} className="flex flex-col lg:px-2.5 lg:py-1 md:px-1 md:py-1 sm:px-1 sm:py-0.5 rounded-md border border-black">
+          <div key={ele.id} className="flex flex-col lg:px-2.5 lg:py-1 md:px-1 md:py-1 sm:px-1 sm:py-0.5 xs:px-1 xs:py-0.5 rounded-md border border-black">
             <div className="flex flex-row border lg:w-[170px] justify-between border-none">
-              <p className="md:text-[14px] sm:text-[13px] font-bold text-left">{ele.title}</p>
-              <RemoveCircleOutlineIcon className="cursor-pointer" sx={{ width: { md: '18px', sm: '16px' } }} onClick={() => { handleEventDelete(ele.id) }} />
+              <p className="md:text-[14px] sm:text-[13px] xs:text-[15px] font-bold text-left">{ele.title}</p>
+              <RemoveCircleOutlineIcon className="cursor-pointer" sx={{ width: { md: '18px', sm: '16px', xs: '17px' } }} onClick={() => { handleEventDelete(ele.id) }} />
             </div>
-            <p className="md:text-[12px] sm:text-[11px] -mt-0.5 text-left">{dayjs(ele.date).format("DD-MM-YYYY")} {ele.startTime}-{ele.endTime}</p>
+            <p className="md:text-[12px] sm:text-[11px] xs:text-[12px] -mt-0.5 text-left">{dayjs(ele.date).format("DD-MM-YYYY")} {ele.startTime}-{ele.endTime}</p>
           </div>
         ))}
       </div>
       {/* ********************************************** */}
 
       {/* ******************* When profile value is Dashboard i.e profile === "Dashboard" **************** */}
-      {profile === "Dashboard" && <div className="absolute top-0 lg:ml-[14%] md:ml-[15%] sm:ml-[14%] lg:w-[67%] md:w-[66%] sm:w-[60%] border border-l-0 border-y-0 border-[#CBD5E1]">
+      {profile === "Dashboard" && <div className="absolute sm:left-auto xs:-left-3 sm:top-0 xs:top-8 lg:ml-[14%] md:ml-[15%] sm:ml-[14%] lg:w-[67%] md:w-[66%] sm:w-[60%] xs:w-[62%] border border-l-0 border-y-0 border-[#CBD5E1]">
         {/* Dashboard title */}
         <div className="absolute mt-4 ml-8 border-black border-none">
-          <h1 className="lg:text-[23px] md:text-[21px] sm:text-[18px] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
+          <h1 className="lg:text-[23px] md:text-[21px] sm:text-[18px] xs:text-[1.1rem] dashboard"><span className="font-bold dashboard">Dash</span>board</h1>
         </div>
 
         {/* MUI DatePicker component part */}
         <LocalizationProvider dateAdapter={AdapterDayjs} >
-          <div className="absolute flex flex-row right-0 mt-4 md:mr-10 sm:mr-[4%] cursor-pointer border border-none" >
+          <div className="absolute flex flex-row sm:right-0 sm:mt-4 xs:-mt-6 md:mr-10 sm:mr-[4%] xs:ml-[110%] cursor-pointer border border-none" >
             <ThemeProvider theme={theme}>
               <DatePicker
                 value={val}
                 defaultValue={val}
                 disableFuture
                 onChange={(newValue) => setVal(newValue)}
-                format={formatDate(val)}
                 sx={{
                   '& .MuiInputBase-input': {
                     width: {
                       md: '110px',
-                      sm: '100px'
+                      sm: '100px',
+                      xs: '70px'
                     },
                     fontSize: {
                       md: '16px',
                       sm: '15px',
+                      xs: '13px'
                     },
                     height: {
                       md: '10px',
-                      sm: '6px'
+                      sm: '6px',
+                      xs: '1px'
                     },
                     paddingY: {
-                      md:'12px',
-                      sm: '11px'
+                      md: '12px',
+                      sm: '11px',
+                      xs: '11px'
                     },
                   },
                 }}
@@ -665,11 +703,11 @@ const Profile = () => {
         </LocalizationProvider>
 
         {/* Welcome to Fitness! part */}
-        <div className="absolute flex mt-20 md:ml-8 sm:ml-6 sm:w-[90%] lg:p-4 md:p-2 sm:p-2 rounded-xl border">
-          <img src={dashboard_fitness} className="lg:w-[370px] lg:h-[190px] md:w-[360px] md:h-[170px] sm:w-[320px] sm:h-[150px] rounded-xl" />
+        <div className="absolute flex sm:flex-row xs:flex-col sm:mt-20 xs:mt-14 sm:mr-0 xs:mr-4 md:ml-8 sm:ml-6 xs:ml-7 sm:w-[90%] lg:p-4 md:p-2 sm:p-2 rounded-xl border">
+          <img src={dashboard_fitness} className="lg:w-[370px] lg:h-[190px] md:w-[360px] md:h-[170px] sm:w-[320px] sm:h-[150px] xs:w-[190px] xs:h-[100px] rounded-xl" />
           <div className="flex flex-col"> {/* To display both p elements in column instead in row */}
-            <p className="lg:ml-5 md:ml-[2%] sm:ml-0 lg:mt-14 md:mt-[17%] sm:mt-[21%] lg:text-[28px] md:text-[21px] sm:text-[16px] font-bold">Welcome to Fitness!</p>
-            <p className="lg:ml-8 md:ml-[4%] sm:ml-0 lg:mt-2 md:mt-2"> Start Today, Feel Stronger Tomorrow.</p>
+            <p className="lg:ml-5 md:ml-[2%] sm:ml-0 lg:mt-14 md:mt-[17%] sm:mt-[21%] xs:mt-[3%] lg:text-[28px] md:text-[21px] sm:text-[16px] xs:text-[15px] font-bold">Welcome to Fitness!</p>
+            <p className="lg:ml-8 md:ml-[4%] sm:ml-0 sm:pb-0 sm:px-0 xs:px-2 xs:pb-2 lg:mt-2 md:mt-2 sm:text-[16px] xs:text-[13px]"> Start Today, Feel Stronger Tomorrow.</p>
           </div>
         </div>
 
@@ -679,26 +717,91 @@ const Profile = () => {
         Calories burnt :- bg-gradient-to-tl from-[#FFFF00] to-[#ff5151]
         Sleep :- bg-gradient-to-l from-[#A1C4FD] to-[#C2E9FB]*/}
         {/* tr #D3D3D3 -> #FF6B6B, #FF7878 -> #FFFFFF */}
-        <div className="absolute flex flex-row lg:mt-[330px] md:mt-[300px] sm:mt-[270px] lg:ml-[4%] lg:mr-0 md:ml-[5%] md:mr-[5%] sm:ml-[6%] sm:mr-[6%] justify-between md:gap-x-8 sm:gap-x-2 rounded-xl border-none border-fuchsia-500">
+        <div className="absolute flex sm:flex-row xs:flex-col lg:mt-[330px] md:mt-[300px] sm:mt-[270px] xs:mt-[260px] lg:ml-[4%] lg:mr-0 md:ml-[5%] md:mr-[5%] sm:ml-[6%] sm:mr-[6%] xs:ml-[12%] justify-between md:gap-x-8 sm:gap-x-2 xs:gap-y-2 rounded-xl border-none border-fuchsia-500">
           {dashboard_card.map((card, index) => (
-            <div key={index} className={`md:w-[70%] sm:w-[90%] ${card.name === "Water Tracker" ? 'lg:w-[200px]' : 'lg:w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Steps count" ? 'bg-steps bg-cover' : 'bg-water bg-cover'}  border border-black`} onClick={() => setProfile("Profile")}>
+            <div key={index} className={`md:w-[70%] sm:w-[90%] sm:h-auto xs:w-[90%] xs:h-[120px] ${card.name === "Water Tracker" ? 'lg:w-[200px]' : 'lg:w-[170px]'} hover:scale-105 cursor-pointer p-2 rounded-lg ${card.name === "Sleep" ? 'bg-sleep bg-cover' : card.name === "Steps count" ? 'bg-steps bg-cover' : 'bg-water bg-cover'}  border border-black`} onClick={() => setProfile("Profile")}>
               <div className="flex flex-row justify-between sm:gap-x-6">
-                <p className={`text-left h-fit lg:text-[16px] md:text-[14px] sm:text-[13px] dashboard font-bold`}>{card.name}</p>
-                <img src={`${card.name === "Steps count" ? footsteps : card.name === "Water Tracker" ? glass : sleep}`} className={`md:w-[40px] sm:w-[40%]`} />
+                <p className={`text-left h-fit lg:text-[16px] md:text-[14px] sm:text-[13px] xs:text-[16px] dashboard font-bold`}>{card.name}</p>
+                <img src={`${card.name === "Steps count" ? footsteps : card.name === "Water Tracker" ? glass : sleep}`} className={`md:w-[40px] sm:w-[40%] xs:w-[20%]`} />
               </div>
-              <p className={`text-left dashboard lg:mt-8 ${card.name === "Sleep" && data.sleep[val.format("DD-MM-YYYY")] ? 'md:text-[15px] sm:text-[13px] sm:mt-6' : 'md:text-[15px] md:mt-10 sm:mt-8'} `}>{card.name === "Sleep" && data.sleep[val.format("DD-MM-YYYY")] ? data.sleep[val.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : card.name === "Water Tracker" && data.water_intake[val.format("DD-MM-YYYY")] ? data.water_intake[val.format("DD-MM-YYYY")] : card.name === "Steps count" && data.steps[val.format("DD-MM-YYYY")] ? data.steps[val.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
+              <p className={`text-left dashboard lg:mt-8 ${card.name === "Sleep" && data.sleep[val.format("DD-MM-YYYY")] ? 'md:text-[15px] sm:text-[13px] sm:mt-6 xs:mt-12' : 'md:text-[15px] md:mt-10 sm:mt-8 xs:mt-12'} `}>{card.name === "Sleep" && data.sleep[val.format("DD-MM-YYYY")] ? data.sleep[val.format("DD-MM-YYYY")].replace(":", " hours ") + " minutes" : card.name === "Water Tracker" && data.water_intake[val.format("DD-MM-YYYY")] ? data.water_intake[val.format("DD-MM-YYYY")] : card.name === "Steps count" && data.steps[val.format("DD-MM-YYYY")] ? data.steps[val.format("DD-MM-YYYY")] : "---"}  {card.measure}</p>
             </div>
           ))}
         </div>
 
         {/* User's trackers graph section */}
-        <div className="absolute flex lg:mt-[470px] md:mt-[450px] sm:mt-[410px] lg:ml-[4%] sm:ml-[5%] pb-4 sm:w-[90%] sm:h-[42%] rounded-md border">
-          <div className="absolute mt-2 right-0 lg:mr-[5%] md:mr-[4%] sm:mr-[3%] border-none border-black h-fit justify-between space-x-3">
-            {tracker_graph.map((tracker, index) => (
+        <div className="absolute flex lg:mt-[470px] md:mt-[450px] sm:mt-[410px] xs:mt-[660px] lg:ml-[4%] sm:ml-[5%] xs:ml-[12%] pb-4 sm:w-[90%] xs:w-[80%] sm:h-[42%] xs:h-[20%] rounded-md border">
+          <div className="absolute flex flex-row mt-2 right-0 lg:mr-[5%] md:mr-[4%] sm:mr-[3%]  border-none border-black h-fit justify-between space-x-3">
+            {window.innerWidth > 649 && tracker_graph.map((tracker, index) => (
               <button key={index} className={`dashboard lg:text-[14px] md:text-[13px] sm:text-[12px] font-bold ${period === tracker.name ? 'bg-purple-600' : 'bg-purple-100'} border py-0.5 lg:px-5 md:px-3 sm:px-2`} onClick={() => setPeriod(tracker.name)}>{tracker.name}</button>
             ))}
+            {window.innerWidth <= 649 && <select name="period" className="sm:invisible xs:visible flex mr-12 rounded-md border border-black" onChange={(e) => setPeriod(e.target.value)}>
+              <option value="Daily">Daily</option>
+              <option value="Weekly">Weekly</option>
+              <option value="Monthly">Monthly</option>
+            </select>}
             <MoreVertIcon className="cursor-pointer" onClick={() => setOpen(!open)} />
           </div>
+
+          {/* ********** For xs devices View graph :- Graph will display inside dialogue box if user clicks on this */}
+          <p className="sm:invisible xs:visible mt-[80px] mx-auto dashboard cursor-pointer text-[15px]" onClick={() => setShowGraph(true)}>View Graph</p>
+          
+          {/* ********** For xs devices to show users inside Dialogue box ******** */}
+          <Dialog
+            visible={showGraph}
+            className="bg-purple-50 rounded-lg"
+            onHide={() => setShowGraph(false)}
+            header={() => (
+              <p className="font-bold">{option}</p>
+            )}
+            style={{ width: '280px', height: '280px'}}
+
+          >
+            {option === "Sleep" ? (
+              period === "Daily" ?
+                <Line
+                  className="mx-auto cursor-pointer"
+                  style={{ width: 800 }}
+                  data={chartData}
+                  options={{
+                    plugins: {
+                      title: {
+                        display: true,
+                        text: "Daily Sleep Hours"
+                      },
+                      legend: {
+                        display: false
+                      }
+                    }
+                  }}
+                /> :
+                period === "Weekly" ? (
+                  Object.keys(data.sleep).length > 7 ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Sleep Hours" }, legend: { display: false } } }} />
+                    :
+                    <p className="mx-auto text-[35px]">No Data Available</p>) :
+                  period === "Monthly" ? (
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Sleep Hours" }, legend: { display: false } } }} />
+                  ) : null
+            ) : option === "Water Tracker" ? (
+              period === "Daily" ?
+                <Line className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Daily water intake" }, legend: { display: false } } }} />
+                :
+                period === "Weekly" ?
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Hydration Levels" }, legend: { display: false } } }} /> :
+                  period === "Monthly" ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Hydration Levels" }, legend: { display: false } } }} /> :
+                    <p className="mx-auto text-[35px]">No Data Available</p>
+            ) : option === "Steps count" ? (
+              period === "Daily" ?
+                <Line className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Daily Steps count" }, legend: { display: false } } }} /> :
+                period === "Weekly" ?
+                  <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Weekly Steps count" }, legend: { display: false } } }} /> :
+                  period === "Monthly" ?
+                    <Bar className="mx-auto cursor-pointer" data={chartData} style={{ width: 800 }} options={{ plugins: { title: { display: true, text: "Monthly Steps count" }, legend: { display: false } } }} /> : null
+            ) : null
+            }
+          </Dialog>
 
           {/* For option tracker selection like Heart Rate*/}
           {open && <div className="absolute flex flex-col right-0 mt-10 lg:mr-[6%] sm:mr-[5%] w-fit px-3 py-1 bg-white z-20 items-start space-y-1 rounded-md border">
@@ -717,7 +820,7 @@ const Profile = () => {
           </div>}
 
           {/* For displaying tracker's graphs */}
-          <div className="absolute flex items-center mt-12 sm:ml-[4%] sm:w-[92%] h-[300px] rounded-xl border border-black">
+          <div className="sm:visible absolute xs:invisible flex items-center mt-12 sm:ml-[4%] sm:w-[92%] h-[300px] rounded-xl border border-black">
             {option === "Sleep" ? (
               period === "Daily" ?
                 <Line
